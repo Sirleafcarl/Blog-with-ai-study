@@ -12,12 +12,7 @@ import org.mapstruct.factory.Mappers;
 import java.util.Date;
 import java.util.Objects;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-07-30 8:55
- * @description: TODO
- **/
+
 @Mapper(componentModel = "spring")
 public interface BlogSettingConvert {
     BlogSettingConvert INSTANCE = Mappers.getMapper(BlogSettingConvert.class);

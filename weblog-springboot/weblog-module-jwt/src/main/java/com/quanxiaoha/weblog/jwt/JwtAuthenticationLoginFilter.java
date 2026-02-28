@@ -14,12 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-04-18 16:21
- * @description: 登录认证过滤器
- **/
+
 @Slf4j
 public class JwtAuthenticationLoginFilter extends AbstractAuthenticationProcessingFilter {
 

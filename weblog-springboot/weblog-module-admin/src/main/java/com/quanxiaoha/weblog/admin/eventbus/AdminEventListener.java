@@ -8,12 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-07-01 21:35
- * @description: 事件监听
- **/
+
 @Component
 @Slf4j
 public class AdminEventListener implements EventListener {

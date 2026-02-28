@@ -7,12 +7,7 @@ import com.quanxiaoha.weblog.web.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-04-18 8:14
- * @description: 首页
- **/
+
 @RestController
 @RequestMapping("/index")
 public class IndexController {
