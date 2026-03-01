@@ -31,18 +31,7 @@
             <el-form-item label="CSDN 主页访问地址" v-if="isCSDNCheck">
                 <el-input v-model="form.csdnHome" clearable placeholder="请输入 CSDN 主页访问的 URL" />
             </el-form-item>
-            <el-form-item label="开启 Gitee 访问">
-                <el-switch v-model="isGiteeCheck" inline-prompt :active-icon="Check" :inactive-icon="Close" @change="giteeSwitchChange"/>
-            </el-form-item>
-            <el-form-item label="Gitee 主页访问地址" v-if="isGiteeCheck">
-                <el-input v-model="form.giteeHome" clearable placeholder="请输入 Gitee 主页访问的 URL" />
-            </el-form-item>
-            <el-form-item label="开启知乎访问">
-                <el-switch v-model="isZhihuCheck" inline-prompt :active-icon="Check" :inactive-icon="Close" @change="zhihuSwitchChange"/>
-            </el-form-item>
-            <el-form-item label="知乎主页访问地址" v-if="isZhihuCheck">
-                <el-input v-model="form.zhihuHome" clearable placeholder="请输入知乎主页访问的 URL" />
-            </el-form-item>
+
             <el-form-item>
                 <el-button type="primary" @click="onSubmit">保存</el-button>
             </el-form-item>
@@ -59,8 +48,6 @@ import { getBlogSettingDetail, updateBlogSetting } from '@/api/admin/blogsetting
 
 const isGithubCheck = ref(false)
 const isCSDNCheck = ref(false)
-const isGiteeCheck = ref(false)
-const isZhihuCheck = ref(false)
 
 
 const form = reactive({
@@ -92,17 +79,7 @@ const csdnSwitchChange = (e) => {
     }
 }
 
-const giteeSwitchChange = (e) => {
-    if (e == false) {
-        form.giteeHome = ''
-    }
-}
 
-const zhihuSwitchChange = (e) => {
-    if (e == false) {
-        form.zhihuHome = ''
-    }
-}
 
 const handleTitleImageChange = (file) => {
     console.log('开始上传文件')
@@ -131,17 +108,9 @@ function initBlogSetting() {
                 isGithubCheck.value = true
                 form.githubHome = e.data.githubHome
             }
-            if (e.data.giteeHome) {
-                isGiteeCheck.value = true
-                form.giteeHome = e.data.giteeHome
-            }
             if (e.data.csdnHome) {
                 isCSDNCheck.value = true
                 form.csdnHome = e.data.csdnHome
-            }
-            if (e.data.zhihuHome) {
-                isZhihuCheck.value = true
-                form.zhihuHome = e.data.zhihuHome
             }
         }
 })
