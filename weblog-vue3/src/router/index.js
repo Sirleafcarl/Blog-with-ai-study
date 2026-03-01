@@ -3,6 +3,7 @@ import AdminIndex from '@/pages/admin/index.vue';
 import About from '@/pages/about.vue';
 import NotFound from '@/pages/404.vue';
 import AdminLogin from '@/pages/admin/login.vue';
+import AdminRegister from '@/pages/admin/register.vue';
 import Admin from '@/layouts/admin.vue'
 import AdminArticleList from '@/pages/admin/article-list.vue'
 import AdminCategoryList from '@/pages/admin/category-list.vue'
@@ -70,6 +71,13 @@ const routes = [
         component: AdminLogin,
         meta: {
             title: '登录页'
+        }
+    },
+    {
+        path: '/register',
+        component: AdminRegister,
+        meta: {
+            title: '注册页'
         }
     },
     {

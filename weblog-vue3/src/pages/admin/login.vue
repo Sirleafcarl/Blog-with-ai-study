@@ -6,7 +6,7 @@
                 <div class="login-container-left flex justify-center items-center flex-col">
                     <div class="animate__animated animate__bounceInLeft items-center flex flex-col">
                         <h2 class="font-bold text-4xl mb-7 text-white">Weblog 博客登录</h2>
-                        <p class="text-white">一款由 Spring Boot + Mybaits Plus + Vue 3.2 + Vite 4 开发的前后端分离博客。</p>
+                        <p class="text-white">博客</p>
                         <img src="@/assets/developer.png" class="login-image">
                     </div>
                 </div>
@@ -38,6 +38,10 @@
                                 </el-button>
 
                             </el-form-item>
+                            <div class="text-center mt-3">
+                                <span class="text-gray-500 text-sm">还没有账号？</span>
+                                <el-link type="primary" @click="goToRegister" class="ml-1">立即注册</el-link>
+                            </div>
                         </el-form>
                     </div>
 
@@ -116,6 +120,10 @@ const onSubmit = () => {
                 loading.value = false
             })
     })
+}
+
+const goToRegister = () => {
+    router.push('/register')
 }
 
 function onKeyUp(e) {
