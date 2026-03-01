@@ -13,12 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-04-18 9:23
- * @description: 登录成功后访问受保护的资源，但是权限不够
- **/
+
 @Component
 @Slf4j
 public class RestAccessDeniedHandler implements AccessDeniedHandler {

@@ -11,4 +11,6 @@ public interface AdminUserDao {
     UserDO selectByUsername(String username);
 
     int updateAdminPassword(UserDO userDO);
+
+    int insertUser(UserDO userDO);
 }

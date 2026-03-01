@@ -37,28 +37,6 @@
                     </a>
                 </el-tooltip>
 
-                <el-tooltip v-if="$store.state.setting.giteeHome" class="box-item" effect="dark" content="我的 Gitee"
-                    placement="bottom-start">
-                    <a :href="$store.state.setting.giteeHome" target="_blank">
-                        <svg t="1682483184788" class="icon mr-2 ml-2" viewBox="0 0 1024 1024" version="1.1"
-                            xmlns="http://www.w3.org/2000/svg" p-id="8999" width="28" height="28">
-                            <path
-                                d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z"
-                                fill="#C71D23" p-id="9000"></path>
-                        </svg>
-                    </a>
-                </el-tooltip>
-
-                <el-tooltip v-if="$store.state.setting.zhihuHome" class="box-item" effect="dark" content="我的知乎" placement="bottom-start">
-                    <a :href="$store.state.setting.zhihuHome" target="_blank">
-                        <svg t="1682483411912" class="icon mr-2 ml-2" viewBox="0 0 1024 1024" version="1.1"
-                            xmlns="http://www.w3.org/2000/svg" p-id="9603" width="30" height="30">
-                            <path
-                                d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zM432.3 592.8l71 80.7c9.2 33-3.3 63.1-3.3 63.1l-95.7-111.9v-0.1c-8.9 29-20.1 57.3-33.3 84.7-22.6 45.7-55.2 54.7-89.5 57.7-34.4 3-23.3-5.3-23.3-5.3 68-55.5 78-87.8 96.8-123.1 11.9-22.3 20.4-64.3 25.3-96.8H264.1s4.8-31.2 19.2-41.7h101.6c0.6-15.3-1.3-102.8-2-131.4h-49.4c-9.2 45-41 56.7-48.1 60.1-7 3.4-23.6 7.1-21.1 0 2.6-7.1 27-46.2 43.2-110.7 16.3-64.6 63.9-62 63.9-62-12.8 22.5-22.4 73.6-22.4 73.6h159.7c10.1 0 10.6 39 10.6 39h-90.8c-0.7 22.7-2.8 83.8-5 131.4H519s12.2 15.4 12.2 41.7h-110l-0.1 1.5c-1.5 20.4-6.3 43.9-12.9 67.6l24.1-18.1z m335.5 116h-87.6l-69.5 46.6-16.4-46.6h-40.1V321.5h213.6v387.3zM408.2 611s0-0.1 0 0z m216 94.3l56.8-38.1h45.6-0.1V364.7H596.7v302.5h14.1z"
-                                fill="#1296DB" p-id="9604"></path>
-                        </svg>
-                    </a>
-                </el-tooltip>
 
 
             </div>
@@ -113,37 +91,8 @@
 </div>
 </span>
                 
+            
 
-<span v-if="$store.state.setting.giteeHome">
-    <a :href="$store.state.setting.giteeHome" data-tooltip-target="gitee-tooltip-bottom" data-tooltip-placement="bottom" target="_blank">
-                    <svg t="1682483184788" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" p-id="8999" width="28" height="28">
-                        <path
-                            d="M512 1024C229.222 1024 0 794.778 0 512S229.222 0 512 0s512 229.222 512 512-229.222 512-512 512z m259.149-568.883h-290.74a25.293 25.293 0 0 0-25.292 25.293l-0.026 63.206c0 13.952 11.315 25.293 25.267 25.293h177.024c13.978 0 25.293 11.315 25.293 25.267v12.646a75.853 75.853 0 0 1-75.853 75.853h-240.23a25.293 25.293 0 0 1-25.267-25.293V417.203a75.853 75.853 0 0 1 75.827-75.853h353.946a25.293 25.293 0 0 0 25.267-25.292l0.077-63.207a25.293 25.293 0 0 0-25.268-25.293H417.152a189.62 189.62 0 0 0-189.62 189.645V771.15c0 13.977 11.316 25.293 25.294 25.293h372.94a170.65 170.65 0 0 0 170.65-170.65V480.384a25.293 25.293 0 0 0-25.293-25.267z"
-                            fill="#C71D23" p-id="9000"></path>
-                    </svg>
-                </a>
-                <div id="gitee-tooltip-bottom" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-    我的 Gitee
-    <div class="tooltip-arrow" data-popper-arrow></div>
-</div>
-</span>
-                
-
-<span v-if="$store.state.setting.zhihuHome">
-    <a :href="$store.state.setting.zhihuHome" data-tooltip-target="zhihu-tooltip-bottom" data-tooltip-placement="bottom" target="_blank">
-                    <svg t="1682483411912" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                        xmlns="http://www.w3.org/2000/svg" p-id="9603" width="30" height="30">
-                        <path
-                            d="M880 112H144c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V144c0-17.7-14.3-32-32-32zM432.3 592.8l71 80.7c9.2 33-3.3 63.1-3.3 63.1l-95.7-111.9v-0.1c-8.9 29-20.1 57.3-33.3 84.7-22.6 45.7-55.2 54.7-89.5 57.7-34.4 3-23.3-5.3-23.3-5.3 68-55.5 78-87.8 96.8-123.1 11.9-22.3 20.4-64.3 25.3-96.8H264.1s4.8-31.2 19.2-41.7h101.6c0.6-15.3-1.3-102.8-2-131.4h-49.4c-9.2 45-41 56.7-48.1 60.1-7 3.4-23.6 7.1-21.1 0 2.6-7.1 27-46.2 43.2-110.7 16.3-64.6 63.9-62 63.9-62-12.8 22.5-22.4 73.6-22.4 73.6h159.7c10.1 0 10.6 39 10.6 39h-90.8c-0.7 22.7-2.8 83.8-5 131.4H519s12.2 15.4 12.2 41.7h-110l-0.1 1.5c-1.5 20.4-6.3 43.9-12.9 67.6l24.1-18.1z m335.5 116h-87.6l-69.5 46.6-16.4-46.6h-40.1V321.5h213.6v387.3zM408.2 611s0-0.1 0 0z m216 94.3l56.8-38.1h45.6-0.1V364.7H596.7v302.5h14.1z"
-                            fill="#1296DB" p-id="9604"></path>
-                    </svg>
-                </a>
-                <div id="zhihu-tooltip-bottom" role="tooltip" class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
-    我的知乎
-    <div class="tooltip-arrow" data-popper-arrow></div>
-</div>
-</span>
                 
             </div>
         </div>

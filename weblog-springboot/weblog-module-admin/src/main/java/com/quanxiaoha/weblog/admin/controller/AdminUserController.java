@@ -1,6 +1,7 @@
 package com.quanxiaoha.weblog.admin.controller;
 
 import com.quanxiaoha.weblog.admin.model.vo.user.QueryUserDetailRspVO;
+import com.quanxiaoha.weblog.admin.model.vo.user.RegisterReqVO;
 import com.quanxiaoha.weblog.admin.model.vo.user.UpdateAdminPasswordReqVO;
 import com.quanxiaoha.weblog.admin.service.AdminBlogSettingService;
 import com.quanxiaoha.weblog.admin.service.AdminUserService;
@@ -14,12 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-04-19 16:06
- * @description: TODO
- **/
+
 @RestController
 @RequestMapping("/admin")
 public class AdminUserController {
@@ -40,5 +36,11 @@ public class AdminUserController {
     @ApiOperationLog(description = "获取登录用户信息")
     public Response<QueryUserDetailRspVO> queryAdminDetail() {
         return blogSettingService.queryNicknameAndAvatar();
+    }
+
+    @PostMapping("/register")
+    @ApiOperationLog(description = "用户注册")
+    public Response register(@RequestBody @Validated RegisterReqVO registerReqVO) {
+        return userService.register(registerReqVO);
     }
 }

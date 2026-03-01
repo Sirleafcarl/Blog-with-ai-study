@@ -14,12 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * @author: 犬小哈
- * @url: www.quanxiaoha.com
- * @date: 2023-04-18 9:23
- * @description: 用户未登录访问受保护的资源
- **/
+
 @Component
 @Slf4j
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {

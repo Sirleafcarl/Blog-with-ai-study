@@ -15,13 +15,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-/**
- * @author: 犬小哈
- * @from: 公众号：小哈学Java, 网站：www.quanxiaoha.com
- * @date: 2023-04-15 14:18
- * @version: v1.0.0
- * @description: TODO
- **/
+
 @Configurable
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
@@ -43,6 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // .addFilterAt(jwtAuthenticationFilter(), AbstractPreAuthenticatedProcessingFilter.class)
                 .csrf().disable()
             .authorizeRequests()
+                .mvcMatchers("/admin/register").permitAll()
                 .mvcMatchers("/admin/**").authenticated()
                 .anyRequest().permitAll()
             .and()

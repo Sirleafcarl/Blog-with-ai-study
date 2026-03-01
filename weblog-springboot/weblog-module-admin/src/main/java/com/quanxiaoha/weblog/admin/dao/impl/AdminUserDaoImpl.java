@@ -36,4 +36,9 @@ public class AdminUserDaoImpl implements AdminUserDao {
         wrapper.lambda().eq(UserDO::getUsername, "admin");
         return userMapper.update(userDO, wrapper);
     }
+
+    @Override
+    public int insertUser(UserDO userDO) {
+        return userMapper.insert(userDO);
+    }
 }
