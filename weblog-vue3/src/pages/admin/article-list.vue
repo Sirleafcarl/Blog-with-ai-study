@@ -372,6 +372,10 @@ const onSubmit = () => {
         if (!valid) {
             return false
         }
+        // Ensure content is always a string, not object
+        if (typeof form.content === 'object' && form.content !== null) {
+            form.content = JSON.stringify(form.content)
+        }
         publishArticle(form).then((e) => {
         console.log(e)
         if (e.success == false) {
@@ -383,6 +387,9 @@ const onSubmit = () => {
         showMessage('发布成功', 'success', 'message')
         isArticlePublishEditorShow.value = false
         location.reload()
+    }).catch((err) => {
+        console.error('[publishArticle error]', err)
+        showMessage('请求失败: ' + (err.message || '未知错误'), 'error', 'message')
     })
     })
 }
@@ -393,6 +400,10 @@ const updateSubmit = () => {
     updateArticleFormRef.value.validate((valid) => {
         if (!valid) {
             return false
+        }
+        // Ensure content is always a string, not object
+        if (typeof form.content === 'object' && form.content !== null) {
+            form.content = JSON.stringify(form.content)
         }
         updateArticle(form).then((e) => {
         console.log(e)
@@ -405,6 +416,9 @@ const updateSubmit = () => {
         showMessage('修改成功', 'success', 'message')
         isArticleUpdateEditorShow.value = false
         location.reload()
+    }).catch((err) => {
+        console.error('[updateArticle error]', err)
+        showMessage('请求失败: ' + (err.message || '未知错误'), 'error', 'message')
     })
     })
 }

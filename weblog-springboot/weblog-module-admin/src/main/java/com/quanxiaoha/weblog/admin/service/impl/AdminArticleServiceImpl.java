@@ -46,11 +46,29 @@ public class AdminArticleServiceImpl implements AdminArticleService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Response publishArticle(PublishArticleReqVO publishArticleReqVO) {
+        // basic parameter validation
+        if (publishArticleReqVO == null) {
+            return Response.fail("发布参数不能为空");
+        }
+        if (publishArticleReqVO.getTitle() == null || publishArticleReqVO.getTitle().trim().isEmpty()) {
+            return Response.fail("文章标题不能为空");
+        }
+        if (publishArticleReqVO.getContent() == null || publishArticleReqVO.getContent().trim().isEmpty()) {
+            return Response.fail("文章内容不能为空");
+        }
+        if (publishArticleReqVO.getCategoryId() == null) {
+            return Response.fail("请选择文章分类");
+        }
+        // 标签列表可为空，由 handleTagBiz 处理
+
         boolean isExecuteSuccess = transactionTemplate.execute(status -> {
             ArticleDO articleDO = ArticleDO.builder()
                     .title(publishArticleReqVO.getTitle())
                     .titleImage(publishArticleReqVO.getTitleImage())
                     .description(publishArticleReqVO.getDescription())
+                    .createTime(new Date())
+                    .updateTime(new Date())
+                    .isDeleted(false)
                     .build();
             articleDao.insertArticle(articleDO);
 
@@ -130,7 +148,10 @@ public class AdminArticleServiceImpl implements AdminArticleService {
     @Override
     // @Transactional(rollbackFor = Exception.class)
     public Response updateArticle(UpdateArticleReqVO updateArticleReqVO) {
-        boolean isExecuteSuccess = transactionTemplate.execute(status -> {
+        // 更新文章分类
+        // 更新文章标签
+        // 提交的标签
+        boolean isExecuteSuccess = Boolean.TRUE.equals(transactionTemplate.execute(status -> {
             Long articleId = updateArticleReqVO.getId();
 
             ArticleDO articleDO = ArticleDO.builder()
@@ -162,7 +183,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
             List<String> publishTags = updateArticleReqVO.getTags();
             handleTagBiz(articleId, publishTags);
             return true;
-        });
+        }));
 
         return isExecuteSuccess ? Response.success() : Response.fail();
     }
@@ -173,50 +194,72 @@ public class AdminArticleServiceImpl implements AdminArticleService {
      * @param publishTags
      */
     public void handleTagBiz(Long articleId, List<String> publishTags) {
-        List<TagDO> tagDOS = tagDao.selectAll();
-
-        // 筛选出库中不存在的标签
-        List<String> noExistTags = null;
-        // 库中已存在的标签
-        List<String> existTags = null;
-        if (!CollectionUtils.isEmpty(tagDOS)) {
-            List<String> tagIds = tagDOS.stream().map(p -> String.valueOf(p.getId())).collect(Collectors.toList());
-            noExistTags = publishTags.stream().filter(p -> !tagIds.contains(p)).collect(Collectors.toList());
-            existTags = publishTags.stream().filter(p -> tagIds.contains(p)).collect(Collectors.toList());
+        // publishTags 可以为 null 或空
+        if (CollectionUtils.isEmpty(publishTags)) {
+            return;
         }
 
-        // 不存在的标签先入库
-        if (!CollectionUtils.isEmpty(noExistTags)) {
-            List<ArticleTagRelDO> articleTagRelDOS = Lists.newArrayList();
-            noExistTags.forEach(noExistTag -> {
+        // 查询所有标签用于名称/id映射
+        List<TagDO> tagDOS = tagDao.selectAll();
+        // map: name -> id
+        java.util.Map<String, Long> name2id = tagDOS.stream()
+                .collect(Collectors.toMap(TagDO::getName, TagDO::getId, (a, b) -> a));
+        // map: id -> name (用于直接提交 id 的情况)
+        java.util.Map<Long, String> id2name = tagDOS.stream()
+                .collect(Collectors.toMap(TagDO::getId, TagDO::getName));
+
+        // 准备最终所有要关联的 tagId
+        java.util.Set<Long> finalTagIds = new java.util.HashSet<>();
+        java.util.List<String> namesToCreate = new java.util.ArrayList<>();
+
+        for (String raw : publishTags) {
+            if (raw == null || raw.trim().isEmpty()) {
+                continue;
+            }
+            String item = raw.trim();
+            // 判断纯数字字符串
+            if (item.matches("\\d+")) {
+                try {
+                    Long id = Long.valueOf(item);
+                    if (id2name.containsKey(id)) {
+                        finalTagIds.add(id);
+                        continue;
+                    }
+                } catch (NumberFormatException ignore) {
+                }
+            }
+            // 不是数字或数字在库中不存在，按名称查找
+            if (name2id.containsKey(item)) {
+                finalTagIds.add(name2id.get(item));
+            } else {
+                // 将来需要在库中创建
+                namesToCreate.add(item);
+            }
+        }
+
+        // 插入新标签并收集其ID
+        if (!CollectionUtils.isEmpty(namesToCreate)) {
+            for (String newName : namesToCreate) {
                 TagDO tagDO = TagDO.builder()
-                        .name(noExistTag)
+                        .name(newName)
                         .createTime(new Date())
                         .updateTime(new Date())
                         .build();
-
                 tagDao.insert(tagDO);
-                Long tagId = tagDO.getId();
+                finalTagIds.add(tagDO.getId());
+            }
+        }
 
+        // 最后批量插入关系
+        if (!finalTagIds.isEmpty()) {
+            List<ArticleTagRelDO> articleTagRelDOS = Lists.newArrayList();
+            for (Long tagId : finalTagIds) {
                 ArticleTagRelDO articleTagRelDO = ArticleTagRelDO.builder()
                         .articleId(articleId)
                         .tagId(tagId)
                         .build();
                 articleTagRelDOS.add(articleTagRelDO);
-            });
-
-            articleTagRelDao.insertBatch(articleTagRelDOS);
-        }
-
-        if (!CollectionUtils.isEmpty(existTags)) {
-            List<ArticleTagRelDO> articleTagRelDOS = Lists.newArrayList();
-            existTags.forEach(existTagId -> {
-                ArticleTagRelDO articleTagRelDO = ArticleTagRelDO.builder()
-                        .articleId(articleId)
-                        .tagId(Long.valueOf(existTagId))
-                        .build();
-                articleTagRelDOS.add(articleTagRelDO);
-            });
+            }
             articleTagRelDao.insertBatch(articleTagRelDOS);
         }
     }

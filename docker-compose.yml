@@ -1,0 +1,56 @@
+version: '3.9'
+
+# 使用前：复制 .env.example 为 .env 并填入实际密码
+# 启动：docker compose up -d
+# 停止：docker compose down
+
+services:
+  # ── MySQL 8.0 ──────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: weblog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-weblog123}
+      MYSQL_DATABASE: ${DB_NAME:-weblog}
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-weblog123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Spring Boot 后端 ────────────────────────────────────────
+  backend:
+    build:
+      context: ./weblog-springboot
+      dockerfile: Dockerfile
+    container_name: weblog-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-weblog}
+      DB_USERNAME: ${DB_USERNAME:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-weblog123}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  mysql_data:
