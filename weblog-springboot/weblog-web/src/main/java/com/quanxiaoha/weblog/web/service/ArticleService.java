@@ -19,4 +19,6 @@ public interface ArticleService {
 
     PageResponse queryTagArticlePageList(QueryTagArticlePageListReqVO queryTagArticlePageListReqVO);
 
+    PageResponse searchArticle(com.quanxiaoha.weblog.web.model.vo.article.SearchArticleReqVO reqVO);
+
 }

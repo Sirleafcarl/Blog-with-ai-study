@@ -328,4 +328,58 @@ public class ArticleServiceImpl implements ArticleService {
         }
         return PageResponse.success(articleDOIPage, list);
     }
+
+    @Override
+    public PageResponse searchArticle(com.quanxiaoha.weblog.web.model.vo.article.SearchArticleReqVO reqVO) {
+        Long current = reqVO.getCurrent();
+        Long size = reqVO.getSize();
+        String keyword = reqVO.getKeyword();
+
+        IPage<ArticleDO> articleDOIPage = articleDao.searchByKeyword(current, size, keyword);
+        List<ArticleDO> records = articleDOIPage.getRecords();
+
+        List<QueryIndexArticlePageItemRspVO> list = null;
+        if (!CollectionUtils.isEmpty(records)) {
+            list = records.stream()
+                    .map(articleDO -> articleConvert.convert(articleDO))
+                    .collect(Collectors.toList());
+
+            List<Long> articleIds = list.stream().map(p -> p.getId()).collect(Collectors.toList());
+
+            // 设置分类信息
+            List<CategoryDO> categoryDOS = categoryDao.selectAllCategory();
+            Map<Long, String> categoryIdNameMap = categoryDOS.stream().collect(Collectors.toMap(CategoryDO::getId, CategoryDO::getName));
+
+            List<ArticleCategoryRelDO> articleCategoryRelDOS = articleCategoryRelDao.selectByArticleIds(articleIds);
+            list = list.stream().map(p -> {
+                Long articleId = p.getId();
+                Optional<ArticleCategoryRelDO> optional = articleCategoryRelDOS.stream()
+                        .filter(rel -> Objects.equals(rel.getArticleId(), articleId)).findFirst();
+                if (optional.isPresent()) {
+                    Long categoryId = optional.get().getCategoryId();
+                    String categoryName = categoryIdNameMap.get(categoryId);
+                    p.setCategory(com.quanxiaoha.weblog.web.model.vo.category.QueryCategoryListItemRspVO.builder()
+                            .id(categoryId).name(categoryName).build());
+                }
+                return p;
+            }).collect(Collectors.toList());
+
+            // 设置标签信息
+            List<TagDO> tagDOS = tagDao.selectAllTag();
+            Map<Long, String> tagIdNameMap = tagDOS.stream().collect(Collectors.toMap(TagDO::getId, TagDO::getName));
+
+            List<ArticleTagRelDO> articleTagRelDOS = articleTagRelDao.selectByArticleIds(articleIds);
+            list = list.stream().map(p -> {
+                Long articleId = p.getId();
+                List<ArticleTagRelDO> rels = articleTagRelDOS.stream()
+                        .filter(rel -> Objects.equals(rel.getArticleId(), articleId)).collect(Collectors.toList());
+                List<QueryTagListItemRspVO> tagVOs = Lists.newArrayList();
+                rels.forEach(rel -> tagVOs.add(QueryTagListItemRspVO.builder()
+                        .id(rel.getTagId()).name(tagIdNameMap.get(rel.getTagId())).build()));
+                p.setTags(tagVOs);
+                return p;
+            }).collect(Collectors.toList());
+        }
+        return PageResponse.success(articleDOIPage, list);
+    }
 }

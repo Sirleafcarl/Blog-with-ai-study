@@ -16,4 +16,6 @@ public interface AdminArticleService {
 
     Response updateArticle(UpdateArticleReqVO updateArticleReqVO);
 
+    Response updateArticleTopOrPublished(UpdateArticleStatusReqVO reqVO);
+
 }

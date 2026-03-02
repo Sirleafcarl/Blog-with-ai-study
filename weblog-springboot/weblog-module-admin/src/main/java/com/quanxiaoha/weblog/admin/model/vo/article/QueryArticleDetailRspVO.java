@@ -20,4 +20,6 @@ public class QueryArticleDetailRspVO {
     private String description;
     private Long categoryId;
     private List<Long> tagIds;
+    private Boolean isTop;
+    private Boolean isPublished;
 }

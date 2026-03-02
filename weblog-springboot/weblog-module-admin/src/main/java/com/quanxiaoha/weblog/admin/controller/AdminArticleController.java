@@ -53,4 +53,11 @@ public class AdminArticleController {
         return articleService.deleteArticle(deleteArticleReqVO);
     }
 
+    @PostMapping("/updateStatus")
+    @ApiOperationLog(description = "更新文章置顶/发布状态")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Response updateArticleStatus(@RequestBody @Validated UpdateArticleStatusReqVO reqVO) {
+        return articleService.updateArticleTopOrPublished(reqVO);
+    }
+
 }

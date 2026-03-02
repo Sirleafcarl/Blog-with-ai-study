@@ -38,6 +38,10 @@ public class PublishArticleReqVO {
     @NotEmpty(message = "文章标签不能为空")
     private List<String> tags;
 
+    private Boolean isTop = false;
+
+    private Boolean isPublished = true;
+
     /**
      * 自定义 content setter，处理客户端可能传递的非字符串类型
      */

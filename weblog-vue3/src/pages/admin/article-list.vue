@@ -33,6 +33,16 @@
                 </template>
             </el-table-column>
             <el-table-column prop="createTime" label="发布时间" width="180" />
+            <el-table-column label="置顶" width="90">
+                <template #default="scope">
+                    <el-switch v-model="scope.row.isTop" @change="onStatusChange(scope.row)" />
+                </template>
+            </el-table-column>
+            <el-table-column label="已发布" width="90">
+                <template #default="scope">
+                    <el-switch v-model="scope.row.isPublished" @change="onStatusChange(scope.row)" />
+                </template>
+            </el-table-column>
             <el-table-column label="操作">
                 <template #default="scope">
                     <el-button size="small" @click="showArticleUpdateEditorShow(scope.row)">
@@ -114,6 +124,12 @@
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
             </el-form-item>
+            <el-form-item label="是否置顶">
+                <el-switch v-model="form.isTop" />
+            </el-form-item>
+            <el-form-item label="是否发布">
+                <el-switch v-model="form.isPublished" />
+            </el-form-item>
 
         </el-form>
     </el-dialog>
@@ -167,6 +183,12 @@
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
                 </el-select>
             </el-form-item>
+            <el-form-item label="是否置顶">
+                <el-switch v-model="form.isTop" />
+            </el-form-item>
+            <el-form-item label="是否发布">
+                <el-switch v-model="form.isPublished" />
+            </el-form-item>
         </el-form>
     </el-dialog>
 </template>
@@ -175,7 +197,7 @@
 // import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue';
 // import MDEditor from '@/components/MDEditor.vue'
-import { publishArticle, getArticlePageList, deleteArticle, getArticleDetail, updateArticle } from '@/api/admin/article'
+import { publishArticle, getArticlePageList, deleteArticle, getArticleDetail, updateArticle, updateArticleStatus } from '@/api/admin/article'
 import { uploadFile } from '@/api/admin/file'
 import MdEditor from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -262,6 +284,8 @@ const hideArticleUpdateEditor = () => {
     form.titleImage = ''
     form.categoryId = null
     form.tags = []
+    form.isTop = false
+    form.isPublished = true
 }
 
 const showArticleUpdateEditorShow = (row) => {
@@ -276,6 +300,8 @@ const showArticleUpdateEditorShow = (row) => {
             form.categoryId = e.data.categoryId
             form.tags = e.data.tagIds
             form.description = e.data.description
+            form.isTop = e.data.isTop ?? false
+            form.isPublished = e.data.isPublished ?? true
         }
     })
 }
@@ -303,6 +329,20 @@ const previewArticle = (row) => {
     window.open(routeData.href, '_blank');
 }
 
+const onStatusChange = (row) => {
+    updateArticleStatus({ id: row.id, isTop: row.isTop, isPublished: row.isPublished }).then((e) => {
+        if (e.success) {
+            showMessage('更新成功', 'success', 'message')
+        } else {
+            showMessage(e.message || '更新失败', 'warning', 'message')
+            getTableData()
+        }
+    }).catch(() => {
+        showMessage('请求失败', 'error', 'message')
+        getTableData()
+    })
+}
+
 const form = reactive({
     id: null,
     title: '',
@@ -310,7 +350,9 @@ const form = reactive({
     titleImage: '',
     categoryId: null,
     tags: [],
-    description: ""
+    description: "",
+    isTop: false,
+    isPublished: true
 })
 
 
