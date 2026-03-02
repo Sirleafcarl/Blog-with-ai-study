@@ -72,6 +72,12 @@ const menus = [{
     'icon': 'Setting',
     'path': '/admin/blog/setting',
     'child': []
+},
+{
+    'name': '评论管理',
+    'icon': 'ChatDotRound',
+    'path': '/admin/comment/list',
+    'child': []
 }
 ]
 

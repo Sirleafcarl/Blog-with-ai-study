@@ -104,9 +104,60 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- 评论区 -->
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            评论 <span class="text-sm font-normal text-gray-500">（{{ commentTotal }} 条）</span>
+                        </h3>
+
+                        <!-- 评论列表 -->
+                        <div v-if="comments.length > 0" class="space-y-4 mb-6">
+                            <div v-for="(c, i) in comments" :key="i"
+                                class="flex gap-3 p-4 bg-gray-50 rounded-lg">
+                                <div class="flex-shrink-0 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                                    {{ c.nickname.charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-semibold text-gray-800 text-sm">{{ c.nickname }}</span>
+                                        <span class="text-xs text-gray-400">{{ c.createTime }}</span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm break-words">{{ c.content }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p v-else class="text-gray-400 text-sm mb-6">暂无评论，来做第一个评论的人吧～</p>
+
+                        <!-- 评论分页 -->
+                        <div v-if="commentTotal > commentSize" class="flex justify-center mb-6">
+                            <el-pagination small background layout="prev, pager, next"
+                                :total="commentTotal" :page-size="commentSize"
+                                v-model:current-page="commentCurrent"
+                                @current-change="loadComments" />
+                        </div>
+
+                        <!-- 发表评论表单 -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-3">发表评论</h4>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <input v-model="commentForm.nickname" placeholder="昵称 *"
+                                    class="col-span-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                <input v-model="commentForm.email" placeholder="邮箱（选填）"
+                                    class="col-span-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                            </div>
+                            <textarea v-model="commentForm.content" placeholder="写下你的评论..." rows="4"
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-3 resize-none"></textarea>
+                            <div class="flex justify-end">
+                                <button @click="submitComment" :disabled="commentSubmitting"
+                                    class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    {{ commentSubmitting ? '提交中...' : '提交评论' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!-- 右边栏 -->
             <div class="col-span-4 px-3 md:col-span-1 sm:col-span-4">
                 <div class="sticky top-21">
                     <UserInfoCard></UserInfoCard>
@@ -154,6 +205,7 @@ import Footer from '@/layouts/components/Footer.vue'
 import UserInfoCard from '@/components/UserInfoCard.vue'
 import { useRoute, useRouter } from 'vue-router';
 import { getArticleDetail } from '@/api/frontend/article';
+import { postComment, getCommentPageList } from '@/api/frontend/comment';
 import { ref, reactive } from 'vue'
 import { getCategories } from '@/api/frontend/category'
 import { getTags } from '@/api/frontend/tag'
@@ -207,6 +259,10 @@ const goArticleDetail = (articleId) => {
     console.log('跳转详情页' + articleId)
     router.push({ path: '/article/detail', query: { articleId: articleId } })
     queryArticleDetail(articleId)
+    commentCurrent.value = 1
+    comments.value = []
+    getCommentPageList({ articleId: Number(articleId), current: 1, size: commentSize.value })
+        .then(res => { if (res.success) { comments.value = res.data || []; commentTotal.value = res.total || 0 } })
 }
 
 
@@ -233,6 +289,48 @@ const goCatagoryArticleListPage = (id, name) => {
 
 const goTagArticleListPage = (id, name) => {
     router.push({ path: '/tag/list', query: { id: id, name: name } })
+}
+
+// ===== 评论区 =====
+const comments = ref([])
+const commentTotal = ref(0)
+const commentSize = ref(10)
+const commentCurrent = ref(1)
+const commentSubmitting = ref(false)
+const commentForm = reactive({ nickname: '', email: '', content: '' })
+
+function loadComments() {
+    const articleId = route.query.articleId
+    if (!articleId) return
+    getCommentPageList({ articleId: Number(articleId), current: commentCurrent.value, size: commentSize.value })
+        .then(res => {
+            if (res.success) {
+                comments.value = res.data || []
+                commentTotal.value = res.total || 0
+            }
+        })
+}
+loadComments()
+
+function submitComment() {
+    const articleId = route.query.articleId
+    if (!commentForm.nickname.trim()) { alert('请填写昵称'); return }
+    if (!commentForm.content.trim()) { alert('请填写评论内容'); return }
+    commentSubmitting.value = true
+    postComment({ articleId: Number(articleId), nickname: commentForm.nickname, email: commentForm.email, content: commentForm.content })
+        .then(res => {
+            if (res.success) {
+                commentForm.nickname = ''
+                commentForm.email = ''
+                commentForm.content = ''
+                commentCurrent.value = 1
+                loadComments()
+            } else {
+                alert(res.message || '提交失败，请稍后重试')
+            }
+        })
+        .catch(() => alert('提交失败，请稍后重试'))
+        .finally(() => { commentSubmitting.value = false })
 }
 
 </script>
