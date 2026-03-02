@@ -7,7 +7,7 @@ import { Console } from "windicss/utils";
 const instance = axios.create({
     baseURL: import.meta.env.VITE_APP_BASE_API,
     // baseURL: '/',
-    timeout: 7000
+    timeout: 30000  // 延长至 30s，兼容大内容文章的提交
 });
 
 // 添加请求拦截器

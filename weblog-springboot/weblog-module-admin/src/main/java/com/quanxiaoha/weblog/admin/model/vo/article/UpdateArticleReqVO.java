@@ -1,6 +1,7 @@
 package com.quanxiaoha.weblog.admin.model.vo.article;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,4 +40,21 @@ public class UpdateArticleReqVO {
 
     @NotEmpty(message = "文章标签不能为空")
     private List<String> tags;
+
+    /**
+     * 自定义 content setter，处理客户端可能传递的非字符串类型
+     */
+    public void setContent(Object contentObj) {
+        if (contentObj == null) {
+            this.content = null;
+        } else if (contentObj instanceof String) {
+            this.content = (String) contentObj;
+        } else {
+            try {
+                this.content = new ObjectMapper().writeValueAsString(contentObj);
+            } catch (Exception e) {
+                this.content = contentObj.toString();
+            }
+        }
+    }
 }
