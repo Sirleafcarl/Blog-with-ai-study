@@ -69,6 +69,8 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                     .createTime(new Date())
                     .updateTime(new Date())
                     .isDeleted(false)
+                    .isTop(publishArticleReqVO.getIsTop() != null ? publishArticleReqVO.getIsTop() : false)
+                    .isPublished(publishArticleReqVO.getIsPublished() != null ? publishArticleReqVO.getIsPublished() : true)
                     .build();
             articleDao.insertArticle(articleDO);
 
@@ -118,6 +120,8 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                 .categoryId(articleCategoryRelDO.getCategoryId())
                 .tagIds(tagIds)
                 .description(articleDO.getDescription())
+                .isTop(articleDO.getIsTop())
+                .isPublished(articleDO.getIsPublished())
                 .build();
 
         return Response.success(queryArticleDetailRspVO);
@@ -160,6 +164,8 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                     .titleImage(updateArticleReqVO.getTitleImage())
                     .description(updateArticleReqVO.getDescription())
                     .updateTime(new Date())
+                    .isTop(updateArticleReqVO.getIsTop() != null ? updateArticleReqVO.getIsTop() : false)
+                    .isPublished(updateArticleReqVO.getIsPublished() != null ? updateArticleReqVO.getIsPublished() : true)
                     .build();
             articleDao.updateById(articleDO);
 
@@ -262,6 +268,18 @@ public class AdminArticleServiceImpl implements AdminArticleService {
             }
             articleTagRelDao.insertBatch(articleTagRelDOS);
         }
+    }
+
+    @Override
+    public Response updateArticleTopOrPublished(UpdateArticleStatusReqVO reqVO) {
+        ArticleDO articleDO = ArticleDO.builder()
+                .id(reqVO.getId())
+                .isTop(reqVO.getIsTop())
+                .isPublished(reqVO.getIsPublished())
+                .updateTime(new Date())
+                .build();
+        int rows = articleDao.updateById(articleDO);
+        return rows > 0 ? Response.success() : Response.fail("更新失败");
     }
 
 }

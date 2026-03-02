@@ -14,6 +14,11 @@
                             <img class="rounded-t-lg h-50 w-full" :src="article.titleImage" />
                         </a>
                         <div class="p-5">
+                            <!-- 置顶标签 -->
+                            <span v-if="article.isTop"
+                                class="inline-block mb-2 bg-red-100 text-red-700 text-xs font-bold mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                📌 置顶
+                            </span>
                             <!-- 标签 -->
                             <div @click="goTagArticleListPage(item.id, item.name)" v-for="(item, index) in article.tags"
                                 :key="index"

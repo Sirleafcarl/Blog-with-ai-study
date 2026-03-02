@@ -8,6 +8,8 @@ import java.util.List;
 public interface ArticleDao {
     IPage<ArticleDO> queryArticlePageList(long current, long size);
 
+    IPage<ArticleDO> searchByKeyword(long current, long size, String keyword);
+
     ArticleDO selectArticleById(Long articleId);
 
     ArticleDO selectPreArticle(Long articleId);

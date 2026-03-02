@@ -66,8 +66,10 @@
                                 <span class="sr-only">Search icon</span>
                             </div>
                             <input type="text" id="search-navbar"
+                                v-model="searchKeyword"
+                                @keyup.enter="doSearch"
                                 class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="搜索待开发...">
+                                placeholder="输入关键词回车搜索...">
                         </div>
                         <button data-collapse-toggle="navbar-search" type="button"
                             class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
@@ -132,8 +134,10 @@
                             </svg>
                         </div>
                         <input type="text" id="search-navbar"
+                            v-model="searchKeyword"
+                            @keyup.enter="doSearch"
                             class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="搜索待开发...">
+                            placeholder="输入关键词回车搜索...">
                     </div>
                     <ul
                         class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
@@ -210,7 +214,7 @@
 
 <script setup>
 import { useStore } from 'vuex'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ref } from 'vue';
 import { showModel, showMessage } from '@/composables/util'
 import { onMounted } from 'vue'
@@ -226,6 +230,7 @@ onMounted(() => {
 
 const store = useStore()
 const route = useRoute()
+const router = useRouter()
 
 const currPath = ref(route.path)
 
@@ -234,6 +239,13 @@ const keys = Object.keys(store.state.user)
 console.log('====== keys')
 console.log(keys)
 const isLogin = ref(keys.length > 0)
+
+const searchKeyword = ref('')
+const doSearch = () => {
+    const kw = searchKeyword.value.trim()
+    if (!kw) return
+    router.push({ path: '/search', query: { keyword: kw } })
+}
 
 const logout = () => {
     console.log('登出')

@@ -16,6 +16,7 @@ import TagList from '@/pages/frontend/tag-list.vue'
 import CategoryArticleList from '@/pages/frontend/category-article-list.vue'
 import TagArticleList from '@/pages/frontend/tag-article-list.vue'
 import ArchiveList from '@/pages/frontend/archive-list.vue'
+import SearchResult from '@/pages/frontend/search-result.vue'
 
 const routes = [
     {
@@ -127,6 +128,13 @@ const routes = [
         component: ArchiveList,
         meta: {
             title: '归档'
+        },
+    },
+    {
+        path: '/search',
+        component: SearchResult,
+        meta: {
+            title: '搜索结果'
         },
     }
 ]

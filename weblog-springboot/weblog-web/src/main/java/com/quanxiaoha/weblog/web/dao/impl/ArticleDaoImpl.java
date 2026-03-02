@@ -23,7 +23,10 @@ public class ArticleDaoImpl implements ArticleDao {
     public IPage<ArticleDO> queryArticlePageList(long current, long size) {
         Page<ArticleDO> page = new Page<>(current, size);
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
-        wrapper.lambda().orderByDesc(ArticleDO::getCreateTime);
+        wrapper.lambda()
+                .eq(ArticleDO::getIsPublished, true)
+                .orderByDesc(ArticleDO::getIsTop)
+                .orderByDesc(ArticleDO::getCreateTime);
         return articleMapper.selectPage(page, wrapper);
     }
 
@@ -35,14 +38,22 @@ public class ArticleDaoImpl implements ArticleDao {
     @Override
     public ArticleDO selectPreArticle(Long articleId) {
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
-        wrapper.lambda().orderByAsc(ArticleDO::getId).gt(ArticleDO::getId, articleId).last("limit 1");
+        wrapper.lambda()
+                .eq(ArticleDO::getIsPublished, true)
+                .gt(ArticleDO::getId, articleId)
+                .orderByAsc(ArticleDO::getId)
+                .last("limit 1");
         return articleMapper.selectOne(wrapper);
     }
 
     @Override
     public ArticleDO selectNextArticle(Long articleId) {
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
-        wrapper.lambda().orderByDesc(ArticleDO::getId).lt(ArticleDO::getId, articleId).last("limit 1");
+        wrapper.lambda()
+                .eq(ArticleDO::getIsPublished, true)
+                .lt(ArticleDO::getId, articleId)
+                .orderByDesc(ArticleDO::getId)
+                .last("limit 1");
         return articleMapper.selectOne(wrapper);
     }
 
@@ -50,7 +61,28 @@ public class ArticleDaoImpl implements ArticleDao {
     public IPage<ArticleDO> queryArticlePageListByArticleIds(Long current, Long size, List<Long> articleIds) {
         Page<ArticleDO> page = new Page<>(current, size);
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
-        wrapper.lambda().in(ArticleDO::getId, articleIds).orderByDesc(ArticleDO::getCreateTime);
+        wrapper.lambda()
+                .in(ArticleDO::getId, articleIds)
+                .eq(ArticleDO::getIsPublished, true)
+                .orderByDesc(ArticleDO::getIsTop)
+                .orderByDesc(ArticleDO::getCreateTime);
+        return articleMapper.selectPage(page, wrapper);
+    }
+
+    @Override
+    public IPage<ArticleDO> searchByKeyword(long current, long size, String keyword) {
+        Page<ArticleDO> page = new Page<>(current, size);
+        QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.lambda()
+                    .eq(ArticleDO::getIsPublished, true)
+                    .like(ArticleDO::getTitle, keyword.trim())
+                    .orderByDesc(ArticleDO::getCreateTime);
+        } else {
+            wrapper.lambda()
+                    .eq(ArticleDO::getIsPublished, true)
+                    .orderByDesc(ArticleDO::getCreateTime);
+        }
         return articleMapper.selectPage(page, wrapper);
     }
 }

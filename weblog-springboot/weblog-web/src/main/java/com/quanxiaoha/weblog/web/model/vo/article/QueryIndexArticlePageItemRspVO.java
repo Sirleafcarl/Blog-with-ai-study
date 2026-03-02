@@ -22,4 +22,5 @@ public class QueryIndexArticlePageItemRspVO {
     private String description;
     private QueryCategoryListItemRspVO category;
     private List<QueryTagListItemRspVO> tags;
+    private Boolean isTop;
 }

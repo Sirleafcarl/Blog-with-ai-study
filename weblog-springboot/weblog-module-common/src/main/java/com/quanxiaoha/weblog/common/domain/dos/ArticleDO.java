@@ -22,4 +22,6 @@ public class ArticleDO {
     private Date updateTime;
     private Boolean isDeleted;
     private Long readNum;
+    private Boolean isTop;
+    private Boolean isPublished;
 }
