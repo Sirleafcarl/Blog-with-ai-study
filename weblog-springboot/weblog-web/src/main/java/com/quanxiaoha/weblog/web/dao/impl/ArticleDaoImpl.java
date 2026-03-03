@@ -24,6 +24,7 @@ public class ArticleDaoImpl implements ArticleDao {
         Page<ArticleDO> page = new Page<>(current, size);
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
         wrapper.lambda()
+                .eq(ArticleDO::getIsDeleted, false)
                 .eq(ArticleDO::getIsPublished, true)
                 .orderByDesc(ArticleDO::getIsTop)
                 .orderByDesc(ArticleDO::getCreateTime);
@@ -39,6 +40,7 @@ public class ArticleDaoImpl implements ArticleDao {
     public ArticleDO selectPreArticle(Long articleId) {
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
         wrapper.lambda()
+                .eq(ArticleDO::getIsDeleted, false)
                 .eq(ArticleDO::getIsPublished, true)
                 .gt(ArticleDO::getId, articleId)
                 .orderByAsc(ArticleDO::getId)
@@ -50,6 +52,7 @@ public class ArticleDaoImpl implements ArticleDao {
     public ArticleDO selectNextArticle(Long articleId) {
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
         wrapper.lambda()
+                .eq(ArticleDO::getIsDeleted, false)
                 .eq(ArticleDO::getIsPublished, true)
                 .lt(ArticleDO::getId, articleId)
                 .orderByDesc(ArticleDO::getId)
@@ -62,6 +65,7 @@ public class ArticleDaoImpl implements ArticleDao {
         Page<ArticleDO> page = new Page<>(current, size);
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
         wrapper.lambda()
+                .eq(ArticleDO::getIsDeleted, false)
                 .in(ArticleDO::getId, articleIds)
                 .eq(ArticleDO::getIsPublished, true)
                 .orderByDesc(ArticleDO::getIsTop)
@@ -75,11 +79,13 @@ public class ArticleDaoImpl implements ArticleDao {
         QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.trim().isEmpty()) {
             wrapper.lambda()
+                    .eq(ArticleDO::getIsDeleted, false)
                     .eq(ArticleDO::getIsPublished, true)
                     .like(ArticleDO::getTitle, keyword.trim())
                     .orderByDesc(ArticleDO::getCreateTime);
         } else {
             wrapper.lambda()
+                    .eq(ArticleDO::getIsDeleted, false)
                     .eq(ArticleDO::getIsPublished, true)
                     .orderByDesc(ArticleDO::getCreateTime);
         }

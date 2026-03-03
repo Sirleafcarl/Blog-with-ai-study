@@ -1,10 +1,13 @@
 package com.quanxiaoha.weblog.admin.controller;
 
 import com.quanxiaoha.weblog.admin.model.vo.user.QueryUserDetailRspVO;
+import com.quanxiaoha.weblog.admin.model.vo.user.QueryUserPageListReqVO;
 import com.quanxiaoha.weblog.admin.model.vo.user.RegisterReqVO;
 import com.quanxiaoha.weblog.admin.model.vo.user.UpdateAdminPasswordReqVO;
+import com.quanxiaoha.weblog.admin.model.vo.user.UpdateUserStatusReqVO;
 import com.quanxiaoha.weblog.admin.service.AdminBlogSettingService;
 import com.quanxiaoha.weblog.admin.service.AdminUserService;
+import com.quanxiaoha.weblog.common.PageResponse;
 import com.quanxiaoha.weblog.common.Response;
 import com.quanxiaoha.weblog.common.aspect.ApiOperationLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,4 +46,19 @@ public class AdminUserController {
     public Response register(@RequestBody @Validated RegisterReqVO registerReqVO) {
         return userService.register(registerReqVO);
     }
+
+    @PostMapping("/user/list")
+    @ApiOperationLog(description = "查询用户分页列表")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public PageResponse queryUserPageList(@RequestBody @Validated QueryUserPageListReqVO reqVO) {
+        return userService.queryUserPageList(reqVO);
+    }
+
+    @PostMapping("/user/updateStatus")
+    @ApiOperationLog(description = "更新用户禁用状态")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Response updateUserStatus(@RequestBody @Validated UpdateUserStatusReqVO reqVO) {
+        return userService.updateUserStatus(reqVO);
+    }
 }
+

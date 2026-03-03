@@ -10,6 +10,7 @@ import AdminCategoryList from '@/pages/admin/category-list.vue'
 import AdminTagList from '@/pages/admin/tag-list.vue'
 import AdminBlogSetting from '@/pages/admin/blog-setting.vue'
 import AdminCommentList from '@/pages/admin/comment-list.vue'
+import AdminUserList from '@/pages/admin/user-list.vue'
 import Index from '@/pages/frontend/index.vue'
 import ArticleDetail from '@/pages/frontend/article-detail.vue'
 import CategoryList from '@/pages/frontend/category-list.vue'
@@ -61,6 +62,12 @@ const routes = [
             component: AdminCommentList,
             meta: {
                 title: '评论管理'
+            }
+        }, {
+            path: '/admin/user/list',
+            component: AdminUserList,
+            meta: {
+                title: '用户管理'
             }
         }]
 

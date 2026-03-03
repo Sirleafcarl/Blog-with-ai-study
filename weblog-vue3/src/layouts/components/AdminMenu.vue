@@ -78,6 +78,12 @@ const menus = [{
     'icon': 'ChatDotRound',
     'path': '/admin/comment/list',
     'child': []
+},
+{
+    'name': '用户管理',
+    'icon': 'User',
+    'path': '/admin/user/list',
+    'child': []
 }
 ]
 

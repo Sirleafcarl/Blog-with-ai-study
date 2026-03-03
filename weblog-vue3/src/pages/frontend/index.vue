@@ -44,8 +44,9 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M1 5v11a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1H1Zm0 0V2a1 1 0 0 1 1-1h5.443a1 1 0 0 1 .8.4l2.7 3.6H1Z" />
                             </svg>
-                            <a @click="goCatagoryArticleListPage(article.category.id, article.category.name)"
+                            <a v-if="article.category" @click="goCatagoryArticleListPage(article.category.id, article.category.name)"
                                 class="text-gray-400 hover:underline">{{ article.category.name }}</a>
+                            <span v-else class="text-gray-400">暂无分类</span>
                             </p>
                         </div>
                     </div>

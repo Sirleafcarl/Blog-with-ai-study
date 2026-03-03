@@ -1,11 +1,7 @@
 package com.quanxiaoha.weblog.admin.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.quanxiaoha.weblog.common.Response;
-import com.quanxiaoha.weblog.common.domain.dos.TagDO;
 import com.quanxiaoha.weblog.common.domain.dos.UserDO;
-
-import java.util.List;
 
 public interface AdminUserDao {
     UserDO selectByUsername(String username);
@@ -13,4 +9,9 @@ public interface AdminUserDao {
     int updateAdminPassword(UserDO userDO);
 
     int insertUser(UserDO userDO);
+
+    Page<UserDO> queryUserPageList(Long current, Long size, String searchUsername);
+
+    int updateUserStatus(Long userId, Boolean isDisabled);
 }
+

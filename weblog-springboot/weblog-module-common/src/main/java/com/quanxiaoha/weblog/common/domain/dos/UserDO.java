@@ -27,4 +27,5 @@ public class UserDO {
     private Date createTime;
     private Date updateTime;
     private Boolean isDeleted;
+    private Boolean isDisabled;
 }
