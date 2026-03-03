@@ -97,7 +97,7 @@
                     <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
                         id="user-dropdown">
                         <ul class="py-2" aria-labelledby="user-menu-button">
-                            <li>
+                            <li v-if="isAdmin">
                                 <a @click="$router.push('/admin')"
                                     class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">
                                     <svg class="inline w-3 h-3 mb-2px mr-1 text-gray-700 dark:text-white" aria-hidden="true"
@@ -215,7 +215,7 @@
 <script setup>
 import { useStore } from 'vuex'
 import { useRoute, useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { showModel, showMessage } from '@/composables/util'
 import { onMounted } from 'vue'
 import { initDropdowns, initCollapses, initModals } from 'flowbite'
@@ -239,6 +239,10 @@ const keys = Object.keys(store.state.user)
 console.log('====== keys')
 console.log(keys)
 const isLogin = ref(keys.length > 0)
+const isAdmin = computed(() => {
+    const roles = store.state.user.roles
+    return Array.isArray(roles) && roles.includes('ROLE_ADMIN')
+})
 
 const searchKeyword = ref('')
 const doSearch = () => {

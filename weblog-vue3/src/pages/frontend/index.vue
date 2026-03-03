@@ -29,7 +29,7 @@
                                 <h2 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{
                                     article.title }}</h2>
                             </a>
-                            <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">{{ article.description }}</p>
+                            <p class="mb-3 font-normal text-gray-500 dark:text-gray-400">{{ article.description && article.description.length > 30 ? article.description.slice(0, 30) + '......' : article.description }}</p>
                             <!-- meta 信息 -->
                             <p class="text-gray-400 text-sm flex items-center article-mata">
                                 <svg class="inline w-3 h-3 mr-2 text-gray-400 dark:text-white" aria-hidden="true"
