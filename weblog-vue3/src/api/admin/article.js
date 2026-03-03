@@ -23,3 +23,7 @@ export function updateArticle(data) {
 export function updateArticleStatus(data) {
     return axios.post("/admin/article/updateStatus", data)
 }
+
+export function auditArticle(data) {
+    return axios.post("/admin/article/audit", data)
+}

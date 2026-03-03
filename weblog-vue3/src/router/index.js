@@ -18,6 +18,7 @@ import CategoryArticleList from '@/pages/frontend/category-article-list.vue'
 import TagArticleList from '@/pages/frontend/tag-article-list.vue'
 import ArchiveList from '@/pages/frontend/archive-list.vue'
 import SearchResult from '@/pages/frontend/search-result.vue'
+import UserProfile from '@/pages/frontend/profile.vue'
 
 const routes = [
     {
@@ -142,6 +143,13 @@ const routes = [
         component: SearchResult,
         meta: {
             title: '搜索结果'
+        },
+    },
+    {
+        path: '/profile',
+        component: UserProfile,
+        meta: {
+            title: '个人主页'
         },
     }
 ]

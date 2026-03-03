@@ -29,6 +29,14 @@ router.beforeEach(async (to, from, next) => {
     // 前台请求逻辑处理
     if (!to.path.startsWith('/admin')) {
         await store.dispatch('getBlogSetting')
+
+        // /profile 需要登录
+        if (to.path === '/profile' && !token) {
+            showMessage('请先登录', 'warning')
+            next({ path: '/login' })
+            return
+        }
+
         next()
         return
     }

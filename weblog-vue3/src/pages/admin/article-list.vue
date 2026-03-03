@@ -11,6 +11,19 @@
 
             <el-button type="primary" class="ml-3" :icon="Search" @click="getTableData">查询</el-button>
             <el-button class="ml-3" :icon="RefreshRight" @click="reset">重置</el-button>
+
+        <!-- 快速状态筛选 -->
+        <div class="mt-3 flex gap-2">
+            <span class="text-sm text-gray-500 mr-1 self-center">状态：</span>
+            <el-button
+                v-for="sf in statusFilters"
+                :key="sf.value"
+                :type="statusFilter === sf.value ? 'primary' : 'default'"
+                size="small"
+                @click="switchStatusFilter(sf.value)">
+                {{ sf.label }}
+            </el-button>
+        </div>
     </el-card>
 
 
@@ -33,6 +46,19 @@
                 </template>
             </el-table-column>
             <el-table-column prop="createTime" label="发布时间" width="180" />
+            <el-table-column label="投稿人" width="120">
+                <template #default="scope">
+                    <span v-if="scope.row.authorUsername" class="text-blue-500 text-sm">{{ scope.row.authorUsername }}</span>
+                    <span v-else class="text-gray-400 text-sm">管理员</span>
+                </template>
+            </el-table-column>
+            <el-table-column label="审核状态" width="100">
+                <template #default="scope">
+                    <el-tag v-if="scope.row.status === 1" type="warning" size="small">审核中</el-tag>
+                    <el-tag v-else-if="scope.row.status === 3" type="danger" size="small">已拒绝</el-tag>
+                    <span v-else></span>
+                </template>
+            </el-table-column>
             <el-table-column label="置顶" width="90">
                 <template #default="scope">
                     <el-switch v-model="scope.row.isTop" @change="onStatusChange(scope.row)" />
@@ -61,6 +87,11 @@
                         </el-icon>
                         删除
                     </el-button>
+                    <el-button
+                        v-if="scope.row.status === 1"
+                        type="success"
+                        size="small"
+                        @click="openAuditDialog(scope.row)">审核</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -191,13 +222,34 @@
             </el-form-item>
         </el-form>
     </el-dialog>
+
+    <!-- 审核对话框 -->
+    <el-dialog v-model="auditDialogVisible" title="审核用户投稿文章" width="480px">
+        <div class="mb-4 text-gray-600">
+            <span class="font-medium">文章：</span>{{ auditArticleRow?.title }}
+            <span v-if="auditArticleRow?.authorUsername" class="ml-3 text-sm text-gray-400">投稿人：{{ auditArticleRow.authorUsername }}</span>
+        </div>
+        <el-form :model="auditForm" label-width="80px">
+            <el-form-item label="审核结果">
+                <el-radio-group v-model="auditForm.action">
+                    <el-radio :label="2">通过并发布</el-radio>
+                    <el-radio :label="3">拒绝</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item v-if="auditForm.action === 3" label="拒绝原因">
+                <el-input v-model="auditForm.rejectReason" type="textarea" :rows="3" placeholder="请输入拒绝原因（可选）" maxlength="300" show-word-limit />
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="auditDialogVisible = false">取消</el-button>
+            <el-button type="primary" :loading="auditSubmitting" @click="submitAudit">提交审核</el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
-// import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue';
-// import MDEditor from '@/components/MDEditor.vue'
-import { publishArticle, getArticlePageList, deleteArticle, getArticleDetail, updateArticle, updateArticleStatus } from '@/api/admin/article'
+import { publishArticle, getArticlePageList, deleteArticle, getArticleDetail, updateArticle, updateArticleStatus, auditArticle } from '@/api/admin/article'
 import { uploadFile } from '@/api/admin/file'
 import MdEditor from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -207,8 +259,23 @@ import { getCategorySelect } from '@/api/admin/category'
 import { selectTags, getTagSelect } from '@/api/admin/tag'
 import moment from 'moment';
 import { Search, RefreshRight } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
+
+// ---- 状态筛选 ----
+const statusFilters = [
+    { label: '全部',   value: null },
+    { label: '审核中', value: 1 },
+    { label: '已发布', value: 2 },
+    { label: '已拒绝', value: 3 },
+]
+const statusFilter = ref(null)
+const switchStatusFilter = (val) => {
+    statusFilter.value = val
+    current.value = 1
+    getTableData()
+}
 
 const isArticlePublishEditorShow = ref(false)
 const isArticleUpdateEditorShow = ref(false)
@@ -386,7 +453,7 @@ const size = ref(10)
 function getTableData() {
     console.log('获取分页数据')
     tableLoading.value = true
-    getArticlePageList({ current: current.value, size: size.value, startDate: startDate.value, endDate: endDate.value, searchTitle: searchTitle.value })
+    getArticlePageList({ current: current.value, size: size.value, startDate: startDate.value, endDate: endDate.value, searchTitle: searchTitle.value, status: statusFilter.value })
         .then((res) => {
             if (res.success == true) {
                 tableData.value = res.data.records
@@ -525,10 +592,45 @@ const remoteMethod = (query) => {
                     options.value = e.data
                 }
             })
-            //   options.value = list.value.filter((item) => {
-            //     return item.label.toLowerCase().includes(query.toLowerCase())
-            //   })
         }, 200)
+    }
+}
+
+// ---- 审核 ----
+const auditDialogVisible = ref(false)
+const auditArticleRow    = ref(null)
+const auditSubmitting    = ref(false)
+const auditForm = reactive({ action: 2, rejectReason: '' })
+
+const openAuditDialog = (row) => {
+    auditArticleRow.value = row
+    auditForm.action = 2
+    auditForm.rejectReason = ''
+    auditDialogVisible.value = true
+}
+
+const submitAudit = async () => {
+    if (auditForm.action === 3 && !auditForm.rejectReason.trim()) {
+        // Allow empty reject reason – just warn
+    }
+    auditSubmitting.value = true
+    try {
+        const res = await auditArticle({
+            articleId: auditArticleRow.value.id,
+            action: auditForm.action,
+            rejectReason: auditForm.rejectReason,
+        })
+        if (res.success) {
+            showMessage(auditForm.action === 2 ? '已通过并发布' : '已拒绝', 'success')
+            auditDialogVisible.value = false
+            getTableData()
+        } else {
+            showMessage(res.message || '审核失败', 'error')
+        }
+    } catch (e) {
+        showMessage('请求失败', 'error')
+    } finally {
+        auditSubmitting.value = false
     }
 }
 </script>

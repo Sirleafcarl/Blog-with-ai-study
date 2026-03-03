@@ -47,6 +47,21 @@ public class AdminArticleDaoImpl implements AdminArticleDao {
     }
 
     @Override
+    public Page<ArticleDO> queryArticlePageListByStatus(Long current, Long size, Date startDate, Date endDate,
+                                                         String searchTitle, Integer status) {
+        Page<ArticleDO> page = new Page<>(current, size);
+        QueryWrapper<ArticleDO> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(Objects.nonNull(status), ArticleDO::getStatus, status)
+                .like(Objects.nonNull(searchTitle), ArticleDO::getTitle, searchTitle)
+                .ge(Objects.nonNull(startDate), ArticleDO::getCreateTime, startDate)
+                .le(Objects.nonNull(endDate), ArticleDO::getCreateTime, endDate)
+                .eq(ArticleDO::getIsDeleted, 0)
+                .orderByDesc(ArticleDO::getCreateTime);
+        return articleMapper.selectPage(page, wrapper);
+    }
+
+    @Override
     public int deleteById(Long articleId) {
         return articleMapper.deleteById(articleId);
     }
