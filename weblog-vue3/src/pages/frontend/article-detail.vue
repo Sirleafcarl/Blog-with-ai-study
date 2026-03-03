@@ -140,19 +140,18 @@
                         <!-- 发表评论表单 -->
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h4 class="text-sm font-semibold text-gray-700 mb-3">发表评论</h4>
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <input v-model="commentForm.nickname" placeholder="昵称 *"
-                                    class="col-span-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                                <input v-model="commentForm.email" placeholder="邮箱（选填）"
-                                    class="col-span-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                            <div v-if="!isLoggedIn" class="text-center py-4 text-gray-400 text-sm">
+                                请先 <a @click="router.push('/login')" class="text-blue-500 cursor-pointer hover:underline">登录</a> 后发表评论
                             </div>
-                            <textarea v-model="commentForm.content" placeholder="写下你的评论..." rows="4"
-                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-3 resize-none"></textarea>
-                            <div class="flex justify-end">
-                                <button @click="submitComment" :disabled="commentSubmitting"
-                                    class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {{ commentSubmitting ? '提交中...' : '提交评论' }}
-                                </button>
+                            <div v-else>
+                                <textarea v-model="commentForm.content" placeholder="写下你的评论..." rows="4"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 mb-3 resize-none"></textarea>
+                                <div class="flex justify-end">
+                                    <button @click="submitComment" :disabled="commentSubmitting"
+                                        class="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {{ commentSubmitting ? '提交中...' : '提交评论' }}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -206,6 +205,7 @@ import UserInfoCard from '@/components/UserInfoCard.vue'
 import { useRoute, useRouter } from 'vue-router';
 import { getArticleDetail } from '@/api/frontend/article';
 import { postComment, getCommentPageList } from '@/api/frontend/comment';
+import { getToken } from '@/composables/auth';
 import { ref, reactive } from 'vue'
 import { getCategories } from '@/api/frontend/category'
 import { getTags } from '@/api/frontend/tag'
@@ -297,7 +297,8 @@ const commentTotal = ref(0)
 const commentSize = ref(10)
 const commentCurrent = ref(1)
 const commentSubmitting = ref(false)
-const commentForm = reactive({ nickname: '', email: '', content: '' })
+const isLoggedIn = ref(!!getToken())
+const commentForm = reactive({ content: '' })
 
 function loadComments() {
     const articleId = route.query.articleId
@@ -314,14 +315,11 @@ loadComments()
 
 function submitComment() {
     const articleId = route.query.articleId
-    if (!commentForm.nickname.trim()) { alert('请填写昵称'); return }
     if (!commentForm.content.trim()) { alert('请填写评论内容'); return }
     commentSubmitting.value = true
-    postComment({ articleId: Number(articleId), nickname: commentForm.nickname, email: commentForm.email, content: commentForm.content })
+    postComment({ articleId: Number(articleId), content: commentForm.content })
         .then(res => {
             if (res.success) {
-                commentForm.nickname = ''
-                commentForm.email = ''
                 commentForm.content = ''
                 commentCurrent.value = 1
                 loadComments()

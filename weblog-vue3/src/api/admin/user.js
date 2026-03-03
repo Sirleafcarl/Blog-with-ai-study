@@ -15,3 +15,11 @@ export function getAdminInfo() {
 export function updateAdminPassword(data) {
     return axios.post("/admin/password/update", data)
 }
+
+export function getUserPageList(data) {
+    return axios.post("/admin/user/list", data)
+}
+
+export function updateUserStatus(data) {
+    return axios.post("/admin/user/updateStatus", data)
+}

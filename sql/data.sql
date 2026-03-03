@@ -1,7 +1,7 @@
 -- 管理员 (登录账号/密码 : admin/admin)
-INSERT INTO `weblog`.`t_user` (`id`, `username`, `password`, `create_time`, `update_time`, `is_deleted`) VALUES (1, 'admin', '$2a$10$aGGgbab8HdmfxixuTwIYnOZxPH9hzrQuq1oRfLa91mVzSaRfgmtcu', '2023-07-03 11:57:18', '2023-07-08 08:24:36', 0);
+INSERT INTO `weblog`.`t_user` (`id`, `username`, `password`, `create_time`, `update_time`, `is_deleted`, `is_disabled`) VALUES (1, 'admin', '$2a$10$aGGgbab8HdmfxixuTwIYnOZxPH9hzrQuq1oRfLa91mVzSaRfgmtcu', '2023-07-03 11:57:18', '2023-07-08 08:24:36', 0, 0);
 -- 游客 (登录账号/密码 : test/test)
-INSERT INTO `weblog`.`t_user` (`id`, `username`, `password`, `create_time`, `update_time`, `is_deleted`) VALUES (2, 'test', '$2a$10$L6ce4rQsyJ1k7ZCOfN6X4e5dHLyvg2X0t9JFEZBezDq0lds79Pxja', '2023-07-07 01:22:05', '2023-07-07 01:22:05', 0);
+INSERT INTO `weblog`.`t_user` (`id`, `username`, `password`, `create_time`, `update_time`, `is_deleted`, `is_disabled`) VALUES (2, 'test', '$2a$10$L6ce4rQsyJ1k7ZCOfN6X4e5dHLyvg2X0t9JFEZBezDq0lds79Pxja', '2023-07-07 01:22:05', '2023-07-07 01:22:05', 0, 0);
 
 -- 博客基础设置信息（部署完成后，可自行登录管理后台更改）
 INSERT INTO `weblog`.`t_blog_setting` (`blog_name`, `author`, `introduction`, `avatar`, `github_home`, `csdn_home`, `gitee_home`, `zhihu_home`) VALUES ('Weblog', '犬小哈', '平安喜乐', 'https://img.quanxiaoha.com/quanxiaoha/2a5509abf8fe42118c17d6d18fb36a13.jpg', 'https://www.quanxiaoha.com', 'https://www.quanxiaoha.com', 'https://www.quanxiaoha.com', 'https://www.quanxiaoha.com');
@@ -31,12 +31,12 @@ INSERT INTO `weblog`.`t_tag` (`id`, `name`, `create_time`, `update_time`, `is_de
 
 -- ==================== 文章数据 ====================
 -- ==================== 文章数据 ====================
-INSERT INTO `weblog`.`t_article` (`id`, `title`, `title_image`, `description`, `create_time`, `update_time`, `is_deleted`, `is_publish`) VALUES 
-(1, 'Spring Boot 实战教程', 'https://via.placeholder.com/400x300?text=SpringBoot', 'Spring Boot 是一个用于简化 Spring 应用开发的框架，本文讲解其核心特性', '2023-07-07 10:00:00', '2023-07-07 10:00:00', 0, 1),
-(2, 'Vue.js 3 快速上手', 'https://via.placeholder.com/400x300?text=Vue3', 'Vue.js 3 带来了 Composition API，让我们一起学习新的开发方式', '2023-07-07 11:00:00', '2023-07-07 11:00:00', 0, 1),
-(3, 'MySQL 性能优化指南', 'https://via.placeholder.com/400x300?text=MySQL', '深入探讨 MySQL 的性能优化技巧，包括索引、查询优化等', '2023-07-07 12:00:00', '2023-07-07 12:00:00', 0, 1),
-(4, 'AI 大模型最新进展', 'https://via.placeholder.com/400x300?text=AI', '总结 2023 年 AI 大模型的最新发展和应用场景', '2023-07-08 09:00:00', '2023-07-08 09:00:00', 0, 1),
-(5, 'Python 数据处理实战', 'https://via.placeholder.com/400x300?text=Python', '使用 Pandas 和 NumPy 进行高效的数据处理和分析', '2023-07-08 10:00:00', '2023-07-08 10:00:00', 0, 1);
+INSERT INTO `weblog`.`t_article` (`id`, `title`, `title_image`, `description`, `create_time`, `update_time`, `is_deleted`, `is_published`, `status`) VALUES 
+(1, 'Spring Boot 实战教程', 'https://via.placeholder.com/400x300?text=SpringBoot', 'Spring Boot 是一个用于简化 Spring 应用开发的框架，本文讲解其核心特性', '2023-07-07 10:00:00', '2023-07-07 10:00:00', 0, 1, 2),
+(2, 'Vue.js 3 快速上手', 'https://via.placeholder.com/400x300?text=Vue3', 'Vue.js 3 带来了 Composition API，让我们一起学习新的开发方式', '2023-07-07 11:00:00', '2023-07-07 11:00:00', 0, 1, 2),
+(3, 'MySQL 性能优化指南', 'https://via.placeholder.com/400x300?text=MySQL', '深入探讨 MySQL 的性能优化技巧，包括索引、查询优化等', '2023-07-07 12:00:00', '2023-07-07 12:00:00', 0, 1, 2),
+(4, 'AI 大模型最新进展', 'https://via.placeholder.com/400x300?text=AI', '总结 2023 年 AI 大模型的最新发展和应用场景', '2023-07-08 09:00:00', '2023-07-08 09:00:00', 0, 1, 2),
+(5, 'Python 数据处理实战', 'https://via.placeholder.com/400x300?text=Python', '使用 Pandas 和 NumPy 进行高效的数据处理和分析', '2023-07-08 10:00:00', '2023-07-08 10:00:00', 0, 1, 2);
 
 -- ==================== 文章内容数据 ====================
 INSERT INTO `weblog`.`t_article_content` (`article_id`, `content`) VALUES 
@@ -47,19 +47,20 @@ INSERT INTO `weblog`.`t_article_content` (`article_id`, `content`) VALUES
 (5, '# Python 数据处理实战\n\n## Pandas 基础\n```python\nimport pandas as pd\ndf = pd.read_csv(\"data.csv\")\ndf.head()\n```\n\n## NumPy 操作\n```python\nimport numpy as np\narr = np.array([1, 2, 3])\n```');
 
 -- ==================== 文章-分类关联 ====================
--- ==================== 文章-分类关联 ====================
-INSERT INTO `weblog`.`t_article_category_rel` (`article_id`, `category_id`) VALUES 
-(1, 1), (1, 3),  -- Spring Boot 属于 Java 和 Web开发
-(2, 3),          -- Vue.js 属于 Web开发
-(3, 4),          -- MySQL 属于 数据库
-(4, 5),          -- AI 属于 学习笔记
-(5, 2), (5, 5);  -- Python 属于 Python 和 学习笔记
+-- 注意: t_article_category_rel 有 UNIQUE INDEX on article_id，每篇文章只能属于一个分类
+-- 使用 INSERT IGNORE 防止重复执行时报错
+INSERT IGNORE INTO `weblog`.`t_article_category_rel` (`article_id`, `category_id`) VALUES
+(1, 1),
+(2, 3),
+(3, 4),
+(4, 5),
+(5, 2);
 
 -- ==================== 文章-标签关联 ====================
 -- ==================== 文章-标签关联 ====================
-INSERT INTO `weblog`.`t_article_tag_rel` (`article_id`, `tag_id`) VALUES 
-(1, 1), (1, 2),  -- Spring Boot 标签
-(2, 4),          -- Vue.js 标签
-(3, 3),          -- MySQL 标签
-(4, 5), (4, 6),  -- AI 和 LLM 标签
-(5, 1);          -- Spring 标签
+INSERT IGNORE INTO `weblog`.`t_article_tag_rel` (`article_id`, `tag_id`) VALUES
+(1, 1), (1, 2),
+(2, 4),
+(3, 3),
+(4, 5), (4, 6),
+(5, 1);

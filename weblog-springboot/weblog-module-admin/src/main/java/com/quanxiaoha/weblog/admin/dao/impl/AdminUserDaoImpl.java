@@ -3,18 +3,15 @@ package com.quanxiaoha.weblog.admin.dao.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.quanxiaoha.weblog.admin.dao.AdminTagDao;
 import com.quanxiaoha.weblog.admin.dao.AdminUserDao;
-import com.quanxiaoha.weblog.common.Response;
-import com.quanxiaoha.weblog.common.domain.dos.TagDO;
 import com.quanxiaoha.weblog.common.domain.dos.UserDO;
-import com.quanxiaoha.weblog.common.domain.mapper.TagMapper;
 import com.quanxiaoha.weblog.common.domain.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.util.List;
+import java.util.Date;
 
 
 @Service
@@ -41,4 +38,27 @@ public class AdminUserDaoImpl implements AdminUserDao {
     public int insertUser(UserDO userDO) {
         return userMapper.insert(userDO);
     }
+
+    @Override
+    public Page<UserDO> queryUserPageList(Long current, Long size, String searchUsername) {
+        Page<UserDO> page = new Page<>(current, size);
+        QueryWrapper<UserDO> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .like(StringUtils.hasText(searchUsername), UserDO::getUsername, searchUsername)
+                .eq(UserDO::getIsDeleted, false)
+                .orderByDesc(UserDO::getCreateTime);
+        return userMapper.selectPage(page, wrapper);
+    }
+
+    @Override
+    public int updateUserStatus(Long userId, Boolean isDisabled) {
+        UserDO userDO = UserDO.builder()
+                .isDisabled(isDisabled)
+                .updateTime(new Date())
+                .build();
+        UpdateWrapper<UserDO> wrapper = new UpdateWrapper<>();
+        wrapper.lambda().eq(UserDO::getId, userId);
+        return userMapper.update(userDO, wrapper);
+    }
 }
+

@@ -1,15 +1,20 @@
 package com.quanxiaoha.weblog.web.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.quanxiaoha.weblog.common.PageResponse;
 import com.quanxiaoha.weblog.common.Response;
 import com.quanxiaoha.weblog.common.domain.dos.CommentDO;
+import com.quanxiaoha.weblog.common.domain.dos.UserDO;
+import com.quanxiaoha.weblog.common.domain.mapper.UserMapper;
 import com.quanxiaoha.weblog.web.dao.WebCommentDao;
 import com.quanxiaoha.weblog.web.model.vo.comment.CommentItemRspVO;
 import com.quanxiaoha.weblog.web.model.vo.comment.PostCommentReqVO;
 import com.quanxiaoha.weblog.web.model.vo.comment.QueryCommentPageListReqVO;
 import com.quanxiaoha.weblog.web.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -25,13 +30,28 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private WebCommentDao commentDao;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public Response postComment(PostCommentReqVO reqVO) {
+        // 从 Security 上下文获取当前登录用户名
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // 取用户昵称，未设置则回退到用户名
+        QueryWrapper<UserDO> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(UserDO::getUsername, username).eq(UserDO::getIsDeleted, false);
+        UserDO userDO = userMapper.selectOne(wrapper);
+        String nickname = (userDO != null
+                && userDO.getNickname() != null
+                && !userDO.getNickname().isEmpty())
+                ? userDO.getNickname() : username;
+
         CommentDO commentDO = CommentDO.builder()
                 .articleId(reqVO.getArticleId())
-                .nickname(reqVO.getNickname())
-                .email(reqVO.getEmail() == null ? "" : reqVO.getEmail())
+                .nickname(nickname)
+                .email("")
                 .content(reqVO.getContent())
                 .status(1)
                 .createTime(new Date())

@@ -39,6 +39,11 @@ public class UserDetailServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("该用户不存在");
         }
 
+        // 如果账号被禁用，拒绝登录
+        if (Boolean.TRUE.equals(userDO.getIsDisabled())) {
+            throw new UsernameNotFoundException("该账号已被禁用，请联系管理员");
+        }
+
         // 用户角色
         List<UserRoleDO> roleDOS = userRoleDao.selectByUsername(username);
 

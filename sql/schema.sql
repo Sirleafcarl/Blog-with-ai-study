@@ -1,22 +1,12 @@
 /*
- Navicat Premium Data Transfer
-
- Source Server         : Weblog
- Source Server Type    : MySQL
- Source Server Version : 50739 (5.7.39)
- Source Host           : localhost:3306
- Source Schema         : weblog
-
- Target Server Type    : MySQL
- Target Server Version : 50739 (5.7.39)
- File Encoding         : 65001
-
- Date: 07/07/2023 16:28:59
+ WeBlog - Complete Current Schema
+ Includes all columns from Phase 1 (user profile), Phase 2 (article submission/review),
+ and user management migrations.
+ Safe to re-run: drops and recreates all tables.
 */
 
 SET NAMES utf8mb4;
-SET
-FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
 -- Table structure for t_article
@@ -24,16 +14,22 @@ FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `t_article`;
 CREATE TABLE `t_article`
 (
-    `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '文章id',
-    `title`       varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '文章标题',
-    `title_image` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '文章题图',
-    `description` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '文章描述',
-    `create_time` datetime                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` datetime                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次更新时间',
-    `is_deleted`  tinyint(2) NOT NULL DEFAULT 0 COMMENT '删除标志位：0：未删除 1：已删除',
-    `read_num`    int(11) UNSIGNED NOT NULL DEFAULT 1 COMMENT '被阅读次数',
+    `id`              bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '文章id',
+    `title`           varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '文章标题',
+    `title_image`     varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '文章题图',
+    `description`     varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '文章描述',
+    `create_time`     datetime                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`     datetime                                                      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次更新时间',
+    `is_deleted`      tinyint(2) NOT NULL DEFAULT 0 COMMENT '删除标志位：0：未删除 1：已删除',
+    `read_num`        int(11) UNSIGNED NOT NULL DEFAULT 1 COMMENT '被阅读次数',
+    `is_top`          tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否置顶：0否 1是',
+    `is_published`    tinyint(1) NOT NULL DEFAULT 1 COMMENT '是否发布：0否 1是',
+    `author_username` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '投稿用户名，NULL表示管理员发布',
+    `status`          tinyint(2) NOT NULL DEFAULT 2 COMMENT '文章状态: 0=草稿 1=审核中 2=已发布 3=已拒绝',
+    `reject_reason`   varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '审核拒绝原因',
     PRIMARY KEY (`id`) USING BTREE,
-    INDEX         `idx_create_time`(`create_time`) USING BTREE
+    INDEX             `idx_create_time`(`create_time`) USING BTREE,
+    INDEX             `idx_author_status`(`author_username`, `status`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文章表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -149,11 +145,16 @@ DROP TABLE IF EXISTS `t_user`;
 CREATE TABLE `t_user`
 (
     `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
-    `username`    varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
-    `password`    varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码',
-    `create_time` datetime                                                     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` datetime                                                     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次更新时间',
+    `username`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '用户名',
+    `nickname`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '昵称',
+    `avatar`      varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '用户头像URL',
+    `email`       varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '邮箱',
+    `bio`         varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '个人简介',
+    `password`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '密码',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次更新时间',
     `is_deleted`  tinyint(2) NOT NULL DEFAULT 0 COMMENT '删除标志位：0：未删除 1：已删除',
+    `is_disabled` tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否禁用：0=正常 1=已禁用',
     PRIMARY KEY (`id`) USING BTREE,
     INDEX         `idx_create_time`(`create_time`) USING BTREE,
     INDEX         `idx_username`(`username`) USING BTREE
@@ -173,12 +174,30 @@ CREATE TABLE `t_user_role`
     INDEX         `idx_username`(`username`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户角色表' ROW_FORMAT = Dynamic;
 
-SET
-FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for t_comment
+-- ----------------------------
+DROP TABLE IF EXISTS `t_comment`;
+CREATE TABLE `t_comment`
+(
+    `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'id',
+    `article_id`  bigint(20) UNSIGNED NOT NULL COMMENT '文章id',
+    `nickname`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '评论人昵称',
+    `email`       varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '评论人邮箱',
+    `content`     varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '评论内容',
+    `status`      tinyint(2) NOT NULL DEFAULT 0 COMMENT '状态: 0=待审核 1=已显示 2=已屏蔽',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`) USING BTREE,
+    INDEX         `idx_article_id`(`article_id`) USING BTREE,
+    INDEX         `idx_create_time`(`create_time`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '评论表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for t_visitor_record
 -- ----------------------------
+DROP TABLE IF EXISTS `t_visitor_record`;
 CREATE TABLE `t_visitor_record`
 (
     `id`   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
