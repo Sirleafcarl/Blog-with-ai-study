@@ -10,10 +10,13 @@ import com.quanxiaoha.weblog.common.domain.mapper.BlogSettingMapper;
 import com.quanxiaoha.weblog.common.domain.dos.BlogSettingDO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -62,10 +65,19 @@ public class AdminBlogSettingServiceImpl extends ServiceImpl<BlogSettingMapper, 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
 
-        QueryUserDetailRspVO queryBlogSettingRspVO = QueryUserDetailRspVO.builder().username(username).build();
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        QueryUserDetailRspVO queryBlogSettingRspVO = QueryUserDetailRspVO.builder()
+                .username(username)
+                .roles(roles)
+                .build();
 
         BlogSettingDO blogSettingDO = getOne(null);
-        queryBlogSettingRspVO.setAvatar(blogSettingDO.getAvatar());
+        if (blogSettingDO != null) {
+            queryBlogSettingRspVO.setAvatar(blogSettingDO.getAvatar());
+        }
         return Response.success(queryBlogSettingRspVO);
     }
 }

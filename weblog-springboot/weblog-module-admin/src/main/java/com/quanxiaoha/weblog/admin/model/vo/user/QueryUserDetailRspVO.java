@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 
 @Data
 @AllArgsConstructor
@@ -13,4 +15,5 @@ import lombok.NoArgsConstructor;
 public class QueryUserDetailRspVO {
     private String username;
     private String avatar;
+    private List<String> roles;
 }

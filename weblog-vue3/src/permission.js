@@ -19,7 +19,11 @@ router.beforeEach(async (to, from, next) => {
     // 如果用户已登录，则自动获取用户信息，并使用全局状态管理
     if (token) {
         console.log('获取登录用户信息。。。。')
-        await store.dispatch('getAdminInfo')
+        try {
+            await store.dispatch('getAdminInfo')
+        } catch (e) {
+            console.log('获取用户信息失败', e)
+        }
     }
 
     // 前台请求逻辑处理
@@ -38,11 +42,15 @@ router.beforeEach(async (to, from, next) => {
         return
     }
 
-    // 防止重复登录
-    // if (token && to.path == '/login') {
-    //     notification('请勿重复登录', 'error')
-    //     next({ path: from.path ? from.path : '/' })
-    // }
+    // 已登录但非管理员，禁止访问后台
+    if (token && to.path.startsWith('/admin')) {
+        const roles = store.state.user.roles
+        const isAdmin = Array.isArray(roles) && roles.includes('ROLE_ADMIN')
+        if (!isAdmin) {
+            next({ path: '/' })
+            return
+        }
+    }
 
     next()
 })

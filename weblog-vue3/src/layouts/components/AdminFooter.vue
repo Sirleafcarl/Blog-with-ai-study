@@ -1,19 +1,24 @@
 <template>
     <footer class="footer">
-        Copyright © 2023. All rights reserved. Provided by&nbsp;<a class="quanxiaoha" href="https://www.quanxiaoha.com" target="_blank">犬小哈</a>
+        Copyright © 2026. &nbsp;<a class="sirleaf" href="https://github.com/Sirleafcarl/Blog-with-ai-study" target="_blank">Sirleaf</a>
     </footer>
 </template>
 
 <style scoped>
 .footer {
     @apply text-gray-500 text-sm justify-center flex;
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
     background-color: #fff;
-    margin-top: 5rem;
+    border-top: 1px solid #e5e7eb;
+    z-index: 10;
 }
 
-.quanxiaoha {
+.sirleaf {
     text-decoration: underline;
     color: rgb(52, 152, 219);
 }
