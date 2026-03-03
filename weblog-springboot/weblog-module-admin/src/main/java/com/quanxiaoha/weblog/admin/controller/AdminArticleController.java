@@ -60,4 +60,11 @@ public class AdminArticleController {
         return articleService.updateArticleTopOrPublished(reqVO);
     }
 
+    @PostMapping("/audit")
+    @ApiOperationLog(description = "审核用户投稿文章")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Response auditArticle(@RequestBody @Validated AuditArticleReqVO reqVO) {
+        return articleService.auditArticle(reqVO);
+    }
+
 }

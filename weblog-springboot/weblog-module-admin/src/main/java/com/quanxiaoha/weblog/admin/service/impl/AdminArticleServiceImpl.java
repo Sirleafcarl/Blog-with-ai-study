@@ -71,6 +71,7 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                     .isDeleted(false)
                     .isTop(publishArticleReqVO.getIsTop() != null ? publishArticleReqVO.getIsTop() : false)
                     .isPublished(publishArticleReqVO.getIsPublished() != null ? publishArticleReqVO.getIsPublished() : true)
+                    .status(2)  // 管理员直接发布，状态=已发布
                     .build();
             articleDao.insertArticle(articleDO);
 
@@ -134,8 +135,10 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         Date startDate = queryArticlePageListReqVO.getStartDate();
         Date endDate = queryArticlePageListReqVO.getEndDate();
         String searchTitle = queryArticlePageListReqVO.getSearchTitle();
+        Integer status = queryArticlePageListReqVO.getStatus();
 
-        Page<ArticleDO> articleDOPage = articleDao.queryArticlePageList(current, size, startDate, endDate, searchTitle);
+        Page<ArticleDO> articleDOPage = articleDao.queryArticlePageListByStatus(
+                current, size, startDate, endDate, searchTitle, status);
 
         return Response.success(articleDOPage);
     }
@@ -280,6 +283,32 @@ public class AdminArticleServiceImpl implements AdminArticleService {
                 .build();
         int rows = articleDao.updateById(articleDO);
         return rows > 0 ? Response.success() : Response.fail("更新失败");
+    }
+
+    @Override
+    public Response auditArticle(AuditArticleReqVO reqVO) {
+        Long articleId = reqVO.getArticleId();
+        Integer action = reqVO.getAction();
+        // action: 2=通过发布, 3=拒绝
+        if (action != 2 && action != 3) {
+            return Response.fail("无效的审核操作，1=通过，3=拒绝");
+        }
+        ArticleDO existing = articleDao.queryByArticleId(articleId);
+        if (existing == null) {
+            return Response.fail("文章不存在");
+        }
+        ArticleDO update = ArticleDO.builder()
+                .id(articleId)
+                .status(action)
+                .rejectReason(action == 3 ? reqVO.getRejectReason() : null)
+                .updateTime(new Date())
+                .build();
+        if (action == 2) {
+            // 审核通过 → 同时标记已发布
+            update.setIsPublished(true);
+        }
+        int rows = articleDao.updateById(update);
+        return rows > 0 ? Response.success() : Response.fail("审核操作失败");
     }
 
 }

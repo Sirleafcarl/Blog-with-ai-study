@@ -18,4 +18,6 @@ public class QueryArticlePageListReqVO {
     private Date startDate;
     private Date endDate;
     private String searchTitle;
+    /** null=全部, 1=审核中, 2=已发布, 3=已拒绝 */
+    private Integer status;
 }

@@ -14,8 +14,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
@@ -133,7 +136,7 @@ public class ApiOperationLogAspect {
         long timeConsuming = System.currentTimeMillis() - startTime;
         String methodDescription = getAspectLogDescription(proceedingJoinPoint);
 
-        log.info("========== 请求结束: [{}], 耗时: {}ms, 出参: {} =================================== {}", methodDescription, timeConsuming, new ObjectMapper().writeValueAsString(result), LINE_SEPARATOR);
+        log.info("========== 请求结束: [{}], 耗时: {}ms, 出参: {} =================================== {}", methodDescription, timeConsuming, safeToJson(result), LINE_SEPARATOR);
         return result;
     }
 
@@ -164,14 +167,33 @@ public class ApiOperationLogAspect {
         return description.toString();
     }
 
+    private String safeToJson(Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            return "[unserializable result]";
+        }
+    }
+
     /**
-     * 转 json
-     * @param joinPoint
-     * @return
+     * 转 json，跳过无法序列化的类型（如 MultipartFile）
      */
-    private String toJson(JoinPoint joinPoint) throws JsonProcessingException {
+    private String toJson(JoinPoint joinPoint) {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(joinPoint.getArgs());
+        Object[] args = joinPoint.getArgs();
+        java.util.List<Object> serializable = new java.util.ArrayList<>();
+        for (Object arg : args) {
+            if (arg instanceof MultipartFile || arg instanceof ServletRequest || arg instanceof ServletResponse) {
+                serializable.add("[" + arg.getClass().getSimpleName() + "]");
+            } else {
+                serializable.add(arg);
+            }
+        }
+        try {
+            return mapper.writeValueAsString(serializable);
+        } catch (Exception e) {
+            return "[unserializable args]";
+        }
     }
 
 }
