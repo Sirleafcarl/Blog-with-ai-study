@@ -1,8 +1,8 @@
 <template>
     <div class="meun shadow-md fixed bg-light-50 transition-all duration-300" :style="{ width: $store.state.menuWidth }">
         <div class="flex items-center justify-center h-[64px]">
-            <img v-if="$store.state.menuWidth == '250px'" src="@/assets/weblog-logo.png" class="h-[60px]">
-            <img v-else src="@/assets/weblog-logo-mini.png" class="h-[60px]">
+            <img v-if="$store.state.menuWidth == '250px'" src="@/assets/cheese.png" class="h-[60px]">
+            <img v-else src="@/assets/cheese.png" class="h-[60px]">
         </div>
 
         <el-menu :collapse="isCollapse"  class="border-0 admin-el-menu"
