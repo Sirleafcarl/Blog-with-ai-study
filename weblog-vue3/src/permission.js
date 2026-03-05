@@ -65,7 +65,7 @@ router.beforeEach(async (to, from, next) => {
 
 router.afterEach((to, from) => {
     // 设置页面标题
-    let title = (to.meta.title ? to.meta.title : '') + ' - WeBlog'
+    let title = (to.meta.title ? to.meta.title : '') + ' - cheese'
     document.title = title
 
     hidePageLoading()

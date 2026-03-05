@@ -95,11 +95,11 @@ const loadData = async () => {
             size: size.value,
             searchUsername: searchUsername.value || null
         })
-        if (res.data.success) {
-            tableData.value = res.data.data
-            total.value = res.data.total
+        if (res.success) {
+            tableData.value = res.data
+            total.value = res.total
         } else {
-            ElMessage.error(res.data.message || '获取用户列表失败')
+            ElMessage.error(res.message || '获取用户列表失败')
         }
     } catch (e) {
         ElMessage.error('请求失败')
@@ -123,11 +123,11 @@ const handleToggleStatus = async (row) => {
             { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
         )
         const res = await updateUserStatus({ userId: row.id, isDisabled: !row.isDisabled })
-        if (res.data.success) {
+        if (res.success) {
             ElMessage.success(`${action}成功`)
             row.isDisabled = !row.isDisabled
         } else {
-            ElMessage.error(res.data.message || `${action}失败`)
+            ElMessage.error(res.message || `${action}失败`)
         }
     } catch (e) {
         // 取消操作

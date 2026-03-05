@@ -107,7 +107,7 @@ const routes = [
         path: '/',
         component: Index,
         meta: {
-            title: 'WeBlog首页'
+            title: '首页'
         }
     },
     {
