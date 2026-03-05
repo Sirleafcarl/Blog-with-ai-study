@@ -11,6 +11,7 @@ import AdminTagList from '@/pages/admin/tag-list.vue'
 import AdminBlogSetting from '@/pages/admin/blog-setting.vue'
 import AdminCommentList from '@/pages/admin/comment-list.vue'
 import AdminUserList from '@/pages/admin/user-list.vue'
+import AdminNoteList from '@/pages/admin/note-list.vue'
 import Index from '@/pages/frontend/index.vue'
 import ArticleDetail from '@/pages/frontend/article-detail.vue'
 import CategoryList from '@/pages/frontend/category-list.vue'
@@ -68,6 +69,12 @@ const routes = [
             component: AdminUserList,
             meta: {
                 title: '用户管理'
+            }
+        }, {
+            path: '/admin/note/list',
+            component: AdminNoteList,
+            meta: {
+                title: '笔记管理'
             }
         }]
 

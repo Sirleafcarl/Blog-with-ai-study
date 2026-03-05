@@ -1,3 +1,8 @@
+# 阿里云 DashScope AI 配置（将 YOUR_API_KEY_HERE 替换为你的真实 API Key）
+dashscope:
+  api-key: sk-4762b0bebe89473589d6b254e0c4e69d
+  model: qwen-turbo
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -84,6 +84,12 @@ const menus = [{
     'icon': 'User',
     'path': '/admin/user/list',
     'child': []
+},
+{
+    'name': '笔记管理',
+    'icon': 'Notebook',
+    'path': '/admin/note/list',
+    'child': []
 }
 ]
 
