@@ -22,6 +22,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -64,28 +65,23 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
     @Override
     public Response queryDashboardPublishArticleStatisticsInfo() {
-        // 年初
-        int currYear = LocalDate.now().getYear();
-        LocalDate firstDayOfYear = LocalDate.of(currYear, 1, 1);
-        String firstDayStr = firstDayOfYear.format(Constants.DATE_TIME_FORMATTER);
+        // 与前端保持一致：从当前月往前推4个月作为起始，往后延2个月作为结束
+        LocalDate startDate = LocalDate.now().minusMonths(4).withDayOfMonth(1);
+        LocalDate endDate = LocalDate.now();
 
-        // 当日
-        String currDayStr = LocalDate.now().format(Constants.DATE_TIME_FORMATTER);
+        String startDateStr = startDate.format(Constants.DATE_TIME_FORMATTER);
+        String endDateStr = endDate.format(Constants.DATE_TIME_FORMATTER);
 
-        List<ArticleCountDO> articleCountDOS = articleDao.selectArticleCount(firstDayStr, currDayStr);
+        List<ArticleCountDO> articleCountDOS = articleDao.selectArticleCount(startDateStr, endDateStr);
 
-        Map<String, Long> map = null;
-        if (!CollectionUtils.isEmpty(articleCountDOS)) {
-            Map<String, Long> dateCountMap = articleCountDOS.stream().collect(Collectors.toMap(ArticleCountDO::getDate, ArticleCountDO::getCount));
+        Map<String, Long> dateCountMap = CollectionUtils.isEmpty(articleCountDOS)
+                ? Collections.emptyMap()
+                : articleCountDOS.stream().collect(Collectors.toMap(ArticleCountDO::getDate, ArticleCountDO::getCount));
 
-            map = Maps.newLinkedHashMap();
-
-            LocalDate currDate = LocalDate.now();
-            for (LocalDate date = firstDayOfYear; date.isBefore(currDate) || date.isEqual(currDate); date.plusDays(1)) {
-                String key = date.format(Constants.DATE_TIME_FORMATTER);
-                map.put(key, Objects.isNull(dateCountMap.get(key)) ? 0L : dateCountMap.get(key));
-                date = date.plusDays(1);
-            }
+        Map<String, Long> map = Maps.newLinkedHashMap();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            String key = date.format(Constants.DATE_TIME_FORMATTER);
+            map.put(key, dateCountMap.getOrDefault(key, 0L));
         }
 
         return Response.success(map);

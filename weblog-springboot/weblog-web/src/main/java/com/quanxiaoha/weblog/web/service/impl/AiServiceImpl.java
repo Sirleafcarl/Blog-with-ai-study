@@ -85,6 +85,7 @@ public class AiServiceImpl implements AiService {
             return Response.fail("AI 服务调用失败，请检查 API Key 配置或稍后重试");
         }
 
+        // 保存历史记录
         saveHistory(username, noteDO, "quiz", result);
 
         return Response.success(result);
@@ -119,6 +120,7 @@ public class AiServiceImpl implements AiService {
             return Response.fail("AI 服务调用失败，请检查 API Key 配置或稍后重试");
         }
 
+        // 保存历史记录
         saveHistory(username, noteDO, "review", result);
 
         return Response.success(result);
@@ -184,6 +186,9 @@ public class AiServiceImpl implements AiService {
         aiHistoryMapper.insert(history);
     }
 
+    /**
+     * 调用 DashScope OpenAI 兼容接口
+     */
     private String callAi(String prompt) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -191,6 +196,7 @@ public class AiServiceImpl implements AiService {
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.set("Authorization", "Bearer " + apiKey);
 
+            // 用 ObjectMapper 序列化 prompt，避免特殊字符转义问题
             String promptJson = objectMapper.writeValueAsString(prompt);
             String requestBody = "{\"model\":\"" + model + "\","
                     + "\"messages\":[{\"role\":\"user\",\"content\":" + promptJson + "}],"
@@ -198,6 +204,7 @@ public class AiServiceImpl implements AiService {
 
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
             log.info("==> 调用 DashScope AI, model: {}", model);
+
             log.info("==> 请求 URL: {}", DASHSCOPE_URL);
             log.info("==> 请求 Body: {}", requestBody);
 
