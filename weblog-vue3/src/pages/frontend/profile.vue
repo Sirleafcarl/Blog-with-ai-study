@@ -43,12 +43,75 @@
 
         <!-- Tab 内容 -->
         <div>
-            <!-- 我的笔记（占位） -->
-            <div v-if="activeTab === 'notes'" class="text-center text-gray-400 py-16">
-                <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7l-5-5H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
-                <p>笔记功能即将上线</p>
+            <!-- 我的笔记 -->
+            <div v-if="activeTab === 'notes'">
+                <!-- 操作栏 -->
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div class="flex items-center gap-2">
+                        <el-input
+                            v-model="noteKeyword"
+                            placeholder="搜索笔记..."
+                            clearable
+                            class="w-48"
+                            @keyup.enter="handleNoteSearch"
+                            @clear="handleNoteSearch" />
+                        <el-select
+                            v-model="noteFilterCategoryId"
+                            placeholder="全部分类"
+                            clearable
+                            class="w-32"
+                            @change="handleNoteSearch">
+                            <el-option v-for="cat in noteCategoryList" :key="cat.id" :label="cat.name" :value="cat.id" />
+                        </el-select>
+                        <el-button type="primary" size="small" @click="handleNoteSearch">搜索</el-button>
+                    </div>
+                    <div class="flex gap-2">
+                        <el-button size="small" @click="noteCategoryDialogVisible = true">分类管理</el-button>
+                        <el-button type="primary" size="small" @click="openNoteCreateDialog">✏️ 新建笔记</el-button>
+                    </div>
+                </div>
+
+                <!-- 笔记列表 -->
+                <div v-loading="noteLoading">
+                    <div v-if="noteList.length === 0 && !noteLoading" class="text-center text-gray-400 py-16">
+                        <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7l-5-5H5a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        <p>还没有笔记，快去创建一篇吧</p>
+                    </div>
+                    <div v-else class="space-y-3">
+                        <div v-for="item in noteList" :key="item.id"
+                             class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base font-semibold text-gray-800 dark:text-white truncate">{{ item.title }}</h3>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <el-tag v-if="item.categoryName" size="small" type="info">{{ item.categoryName }}</el-tag>
+                                        <span class="text-xs text-gray-400">{{ item.updateTime }}</span>
+                                    </div>
+                                    <p v-if="item.summary" class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.summary }}</p>
+                                </div>
+                                <div class="flex gap-1 ml-3 flex-shrink-0">
+                                    <el-button size="small" type="primary" link @click="handleNoteEdit(item)">编辑</el-button>
+                                    <el-button size="small" type="danger" link @click="handleNoteDelete(item)">删除</el-button>
+                                    <el-button size="small" type="warning" link :loading="item._generating" @click="handleNoteGenerate(item)">生成题目</el-button>
+                                    <el-button size="small" type="success" link :loading="item._reviewing" @click="handleNoteReview(item)">AI批改</el-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center" v-if="noteTotal > noteSize">
+                        <el-pagination
+                            v-model:current-page="notePage"
+                            v-model:page-size="noteSize"
+                            :page-sizes="[10, 20]"
+                            background
+                            layout="total, sizes, prev, pager, next"
+                            :total="noteTotal"
+                            @size-change="loadMyNotes"
+                            @current-change="loadMyNotes" />
+                    </div>
+                </div>
             </div>
 
             <!-- 我的博客 -->
@@ -114,12 +177,49 @@
                 </div>
             </div>
 
-            <!-- AI历史（占位） -->
-            <div v-if="activeTab === 'ai'" class="text-center text-gray-400 py-16">
-                <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                </svg>
-                <p>AI历史功能即将上线</p>
+            <!-- AI历史 -->
+            <div v-if="activeTab === 'ai'">
+                <div v-loading="aiHistoryLoading">
+                    <div v-if="aiHistoryList.length === 0 && !aiHistoryLoading" class="text-center text-gray-400 py-16">
+                        <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        <p>还没有 AI 历史记录</p>
+                    </div>
+                    <div v-else class="space-y-3">
+                        <div v-for="item in aiHistoryList" :key="item.id"
+                             class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2 flex-1 min-w-0">
+                                    <el-tag :type="item.type === 'quiz' ? 'warning' : 'success'" size="small">
+                                        {{ item.type === 'quiz' ? '🧩 答题' : '✨ 批改' }}
+                                    </el-tag>
+                                    <span class="font-medium text-gray-800 dark:text-white truncate">{{ item.noteTitle }}</span>
+                                    <span v-if="item.type === 'quiz' && item.score != null"
+                                          class="text-sm font-bold"
+                                          :class="item.score >= 60 ? 'text-green-600' : 'text-red-500'">
+                                        {{ item.score }}分
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                                    <span class="text-xs text-gray-400">{{ item.createTime }}</span>
+                                    <el-button size="small" type="primary" link @click="viewAiHistoryDetail(item)">查看</el-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center" v-if="aiHistoryTotal > aiHistorySize">
+                        <el-pagination
+                            v-model:current-page="aiHistoryPage"
+                            v-model:page-size="aiHistorySize"
+                            :page-sizes="[10, 20]"
+                            background
+                            layout="total, sizes, prev, pager, next"
+                            :total="aiHistoryTotal"
+                            @size-change="loadAiHistory"
+                            @current-change="loadAiHistory" />
+                    </div>
+                </div>
             </div>
 
             <!-- 我的点赞 -->
@@ -294,6 +394,136 @@
             </el-form-item>
         </el-form>
     </el-dialog>
+
+    <!-- 新建/编辑笔记对话框 -->
+    <el-dialog
+        v-model="noteDialogVisible"
+        :title="noteIsEdit ? '编辑笔记' : '新建笔记'"
+        fullscreen
+        :show-close="false"
+        :modal="false">
+        <template #header>
+            <div class="flex items-center justify-between px-4 py-2 border-b">
+                <h4 class="font-bold text-lg">{{ noteIsEdit ? '编辑笔记' : '新建笔记' }}</h4>
+                <div class="flex gap-2">
+                    <el-button @click="noteDialogVisible = false">取消</el-button>
+                    <el-button type="primary" :loading="noteSaving" @click="handleNoteSubmit">保存</el-button>
+                </div>
+            </div>
+        </template>
+        <el-form :model="noteForm" label-position="top" class="p-4">
+            <el-form-item label="笔记标题">
+                <el-input v-model="noteForm.title" placeholder="请输入笔记标题" maxlength="200" show-word-limit clearable />
+            </el-form-item>
+            <el-form-item label="笔记分类">
+                <el-select v-model="noteForm.categoryId" placeholder="请选择分类（可选）" clearable style="width:200px">
+                    <el-option v-for="cat in noteCategoryList" :key="cat.id" :label="cat.name" :value="cat.id" />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="笔记内容">
+                <MdEditor v-model="noteForm.content" editorId="profileNoteEditor" style="width:100%; min-height:500px" />
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+
+    <!-- 笔记分类管理对话框 -->
+    <el-dialog v-model="noteCategoryDialogVisible" title="笔记分类管理" width="480px">
+        <div class="flex gap-2 mb-4">
+            <el-input v-model="newNoteCategoryName" placeholder="输入新分类名称" clearable />
+            <el-button type="primary" :loading="addNoteCategoryLoading" @click="handleAddNoteCategory">添加</el-button>
+        </div>
+        <el-table :data="noteCategoryList" border stripe size="small">
+            <el-table-column label="分类名称" prop="name" />
+            <el-table-column label="操作" width="80" align="center">
+                <template #default="scope">
+                    <el-button size="small" type="danger" link @click="handleDeleteNoteCategory(scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <!-- AI 结果对话框 -->
+    <el-dialog v-model="noteAiDialogVisible" :title="noteAiDialogTitle" width="750px" top="5vh">
+        <div v-loading="noteAiLoading" style="min-height: 100px;">
+            <!-- 答题模式 -->
+            <div v-if="noteQuizMode && noteQuizQuestions.length > 0" style="max-height: 65vh; overflow-y: auto; padding: 8px;">
+                <div v-for="(q, qi) in noteQuizQuestions" :key="qi" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="font-bold mb-3 text-base">{{ q.title }}</div>
+                    <div v-for="opt in q.options" :key="opt.key" class="mb-2">
+                        <label
+                            class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors"
+                            :class="{
+                                'bg-green-100 border border-green-400': noteQuizSubmitted && opt.key === q.answer,
+                                'bg-red-100 border border-red-400': noteQuizSubmitted && q.userAnswer === opt.key && opt.key !== q.answer,
+                            }">
+                            <input type="radio" :name="'nq'+qi" :value="opt.key" v-model="q.userAnswer" :disabled="noteQuizSubmitted" />
+                            <span>{{ opt.key }}. {{ opt.text }}</span>
+                        </label>
+                    </div>
+                    <div v-if="noteQuizSubmitted" class="mt-2 text-sm">
+                        <span v-if="q.userAnswer === q.answer" class="text-green-600 font-bold">✅ 正确</span>
+                        <span v-else class="text-red-500 font-bold">❌ 错误，正确答案：{{ q.answer }}</span>
+                        <div v-if="q.explanation" class="mt-1 text-gray-500">💡 {{ q.explanation }}</div>
+                    </div>
+                </div>
+                <div v-if="noteQuizSubmitted" class="text-center py-3">
+                    <div class="text-xl font-bold mb-2">得分：{{ noteQuizScore }} / {{ noteQuizQuestions.length * 20 }}</div>
+                    <div class="text-gray-500">答对 {{ noteQuizCorrect }} / {{ noteQuizQuestions.length }} 题</div>
+                </div>
+            </div>
+            <!-- 普通文本模式 -->
+            <div v-else-if="noteAiResult"
+                style="white-space: pre-wrap; line-height: 1.8; font-size: 14px; max-height: 65vh; overflow-y: auto; padding: 8px;">
+                {{ noteAiResult }}
+            </div>
+            <el-empty v-else-if="!noteAiLoading" description="暂无结果" />
+        </div>
+        <template #footer>
+            <el-button v-if="noteQuizMode && !noteQuizSubmitted && noteQuizQuestions.length > 0" type="primary" @click="submitNoteQuiz">提交答题</el-button>
+            <el-button @click="noteAiDialogVisible = false">关闭</el-button>
+        </template>
+    </el-dialog>
+
+    <!-- AI 历史详情对话框 -->
+    <el-dialog v-model="aiHistoryDetailVisible" :title="aiHistoryDetailTitle" width="750px" top="5vh">
+        <div style="min-height: 100px;">
+            <!-- 答题模式 -->
+            <div v-if="aiHistoryDetailQuizMode && aiHistoryDetailQuestions.length > 0" style="max-height: 65vh; overflow-y: auto; padding: 8px;">
+                <div v-for="(q, qi) in aiHistoryDetailQuestions" :key="qi" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div class="font-bold mb-3 text-base">{{ q.title }}</div>
+                    <div v-for="opt in q.options" :key="opt.key" class="mb-2">
+                        <label
+                            class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors"
+                            :class="{
+                                'bg-green-100 border border-green-400': aiHistoryDetailSubmitted && opt.key === q.answer,
+                                'bg-red-100 border border-red-400': aiHistoryDetailSubmitted && q.userAnswer === opt.key && opt.key !== q.answer,
+                            }">
+                            <input type="radio" :name="'hq'+qi" :value="opt.key" v-model="q.userAnswer" :disabled="aiHistoryDetailSubmitted" />
+                            <span>{{ opt.key }}. {{ opt.text }}</span>
+                        </label>
+                    </div>
+                    <div v-if="aiHistoryDetailSubmitted" class="mt-2 text-sm">
+                        <span v-if="q.userAnswer === q.answer" class="text-green-600 font-bold">✅ 正确</span>
+                        <span v-else class="text-red-500 font-bold">❌ 错误，正确答案：{{ q.answer }}</span>
+                        <div v-if="q.explanation" class="mt-1 text-gray-500">💡 {{ q.explanation }}</div>
+                    </div>
+                </div>
+                <div v-if="aiHistoryDetailSubmitted" class="text-center py-3">
+                    <div class="text-xl font-bold mb-2">得分：{{ aiHistoryDetailScore }} / {{ aiHistoryDetailQuestions.length * 20 }}</div>
+                    <div class="text-gray-500">答对 {{ aiHistoryDetailCorrect }} / {{ aiHistoryDetailQuestions.length }} 题</div>
+                </div>
+            </div>
+            <!-- 普通文本模式 -->
+            <div v-else
+                style="white-space: pre-wrap; line-height: 1.8; font-size: 14px; max-height: 65vh; overflow-y: auto; padding: 8px;">
+                {{ aiHistoryDetailContent }}
+            </div>
+        </div>
+        <template #footer>
+            <el-button v-if="aiHistoryDetailQuizMode && !aiHistoryDetailSubmitted && aiHistoryDetailQuestions.length > 0" type="primary" @click="submitAiHistoryQuiz">提交答题</el-button>
+            <el-button @click="aiHistoryDetailVisible = false">关闭</el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
@@ -305,6 +535,9 @@ import Footer from '@/layouts/components/Footer.vue'
 import { getUserProfile, updateUserProfile, updateUserPassword, uploadAvatar } from '@/api/frontend/user'
 import { submitUserArticle, updateUserArticle, deleteUserArticle, getMyArticleList, getMyArticleDetail } from '@/api/frontend/userArticle'
 import { getMyLikedArticles, getMyFavoritedArticles } from '@/api/frontend/interaction'
+import { createNote, updateNote, deleteNote, getNoteDetail, getNotePageList } from '@/api/admin/note'
+import { getNoteCategoryList, addNoteCategory, deleteNoteCategory } from '@/api/admin/note-category'
+import { generateQuestions, reviewNote, getAiHistory, updateAiHistoryScore } from '@/api/admin/ai'
 import { getCategorySelect } from '@/api/admin/category'
 import { selectTags } from '@/api/admin/tag'
 import MdEditor from 'md-editor-v3'
@@ -346,6 +579,9 @@ const loadProfile = async () => {
 
 onMounted(async () => {
     await loadProfile()
+    // 默认加载笔记数据
+    loadNoteCategories()
+    loadMyNotes()
     // 支持从导航栏 ?tab=blogs&write=1 直接打开写文章
     if (route.query.tab) {
         activeTab.value = route.query.tab
@@ -538,15 +774,345 @@ const loadMyFavorites = async () => {
 
 // Watch tab change to load data
 watch(activeTab, (val) => {
-    if (val === 'blogs') {
+    if (val === 'notes') {
+        loadNoteCategories()
+        loadMyNotes()
+    } else if (val === 'blogs') {
         loadCategoryOptions()
         loadMyArticles()
     } else if (val === 'likes') {
         loadMyLikes()
     } else if (val === 'collects') {
         loadMyFavorites()
+    } else if (val === 'ai') {
+        loadAiHistory()
     }
 })
+
+// ===================== 我的笔记 =====================
+const noteList              = ref([])
+const noteTotal             = ref(0)
+const noteLoading           = ref(false)
+const notePage              = ref(1)
+const noteSize              = ref(10)
+const noteKeyword           = ref('')
+const noteFilterCategoryId  = ref(null)
+
+const noteCategoryList          = ref([])
+const noteCategoryDialogVisible = ref(false)
+const newNoteCategoryName       = ref('')
+const addNoteCategoryLoading    = ref(false)
+
+const noteDialogVisible = ref(false)
+const noteIsEdit         = ref(false)
+const noteSaving         = ref(false)
+const noteForm           = reactive({ id: null, title: '', content: '', categoryId: null })
+
+// AI
+const noteAiDialogVisible = ref(false)
+const noteAiDialogTitle   = ref('')
+const noteAiResult        = ref('')
+const noteAiLoading       = ref(false)
+const noteQuizMode        = ref(false)
+const noteQuizQuestions   = ref([])
+const noteQuizSubmitted   = ref(false)
+const noteQuizScore       = ref(0)
+const noteQuizCorrect     = ref(0)
+
+const loadNoteCategories = async () => {
+    try {
+        const res = await getNoteCategoryList()
+        if (res.success) noteCategoryList.value = res.data || []
+    } catch (_) {}
+}
+
+const loadMyNotes = async () => {
+    noteLoading.value = true
+    try {
+        const res = await getNotePageList({
+            current: notePage.value,
+            size: noteSize.value,
+            keyword: noteKeyword.value || null,
+            categoryId: noteFilterCategoryId.value || null,
+        })
+        if (res.success) {
+            noteList.value  = res.data || []
+            noteTotal.value = res.total || 0
+        }
+    } catch (e) {
+        showMessage('加载笔记列表失败', 'error')
+    } finally {
+        noteLoading.value = false
+    }
+}
+
+const handleNoteSearch = () => {
+    notePage.value = 1
+    loadMyNotes()
+}
+
+const openNoteCreateDialog = () => {
+    noteIsEdit.value = false
+    noteForm.id = null
+    noteForm.title = ''
+    noteForm.content = ''
+    noteForm.categoryId = null
+    noteDialogVisible.value = true
+}
+
+const handleNoteEdit = async (row) => {
+    noteIsEdit.value = true
+    try {
+        const res = await getNoteDetail(row.id)
+        if (res.success) {
+            noteForm.id = res.data.id
+            noteForm.title = res.data.title
+            noteForm.content = res.data.content || ''
+            noteForm.categoryId = res.data.categoryId || null
+            noteDialogVisible.value = true
+        } else {
+            showMessage(res.message || '加载失败', 'error')
+        }
+    } catch (_) {
+        showMessage('加载笔记详情失败', 'error')
+    }
+}
+
+const handleNoteDelete = (row) => {
+    ElMessageBox.confirm(`确认删除笔记「${row.title}」？`, '提示', {
+        confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning'
+    }).then(async () => {
+        const res = await deleteNote(row.id)
+        if (res.success) {
+            showMessage('删除成功', 'success')
+            loadMyNotes()
+        } else {
+            showMessage(res.message || '删除失败', 'error')
+        }
+    }).catch(() => {})
+}
+
+const handleNoteSubmit = async () => {
+    if (!noteForm.title.trim()) { showMessage('请输入笔记标题', 'warning'); return }
+    noteSaving.value = true
+    try {
+        const req = noteIsEdit.value
+            ? updateNote({ id: noteForm.id, title: noteForm.title, content: noteForm.content, categoryId: noteForm.categoryId })
+            : createNote({ title: noteForm.title, content: noteForm.content, categoryId: noteForm.categoryId })
+        const res = await req
+        if (res.success) {
+            showMessage(noteIsEdit.value ? '保存成功' : '创建成功', 'success')
+            noteDialogVisible.value = false
+            loadMyNotes()
+        } else {
+            showMessage(res.message || '操作失败', 'error')
+        }
+    } finally {
+        noteSaving.value = false
+    }
+}
+
+// 分类管理
+const handleAddNoteCategory = async () => {
+    if (!newNoteCategoryName.value || !newNoteCategoryName.value.trim()) {
+        showMessage('请输入分类名称', 'warning'); return
+    }
+    addNoteCategoryLoading.value = true
+    try {
+        const res = await addNoteCategory({ name: newNoteCategoryName.value.trim() })
+        if (res.success) {
+            showMessage('添加成功', 'success')
+            newNoteCategoryName.value = ''
+            loadNoteCategories()
+        } else {
+            showMessage(res.message || '添加失败', 'error')
+        }
+    } finally {
+        addNoteCategoryLoading.value = false
+    }
+}
+
+const handleDeleteNoteCategory = (row) => {
+    ElMessageBox.confirm(`确认删除分类「${row.name}」？`, '提示', {
+        confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning'
+    }).then(async () => {
+        const res = await deleteNoteCategory(row.id)
+        if (res.success) {
+            showMessage('删除成功', 'success')
+            loadNoteCategories()
+        } else {
+            showMessage(res.message || '删除失败', 'error')
+        }
+    }).catch(() => {})
+}
+
+// AI 功能
+function parseNoteQuestions(text) {
+    const questions = []
+    const blocks = text.split(/【第\d+题】/).filter(b => b.trim())
+    for (const block of blocks) {
+        const lines = block.trim().split('\n').filter(l => l.trim())
+        const title = lines[0] ? lines[0].trim() : ''
+        const options = []
+        let answer = ''
+        let explanation = ''
+        for (const line of lines) {
+            const optMatch = line.match(/^([A-D])[.．、]\s*(.+)/)
+            if (optMatch) options.push({ key: optMatch[1], text: optMatch[2].trim() })
+            const ansMatch = line.match(/【正确答案】\s*([A-D])/)
+            if (ansMatch) answer = ansMatch[1]
+            const expMatch = line.match(/【解析】\s*(.+)/)
+            if (expMatch) explanation = expMatch[1].trim()
+        }
+        if (title && options.length >= 2 && answer) {
+            questions.push({ title, options, answer, explanation, userAnswer: '' })
+        }
+    }
+    return questions
+}
+
+const submitNoteQuiz = () => {
+    let correct = 0
+    for (const q of noteQuizQuestions.value) {
+        if (q.userAnswer === q.answer) correct++
+    }
+    noteQuizCorrect.value = correct
+    noteQuizScore.value = correct * 20
+    noteQuizSubmitted.value = true
+}
+
+const handleNoteGenerate = (row) => {
+    noteAiDialogTitle.value = `🧩 答题练习 —— 「${row.title}」`
+    noteAiResult.value = ''
+    noteQuizMode.value = true
+    noteQuizQuestions.value = []
+    noteQuizSubmitted.value = false
+    noteQuizScore.value = 0
+    noteQuizCorrect.value = 0
+    noteAiLoading.value = true
+    noteAiDialogVisible.value = true
+    row._generating = true
+
+    generateQuestions(row.id)
+        .then(res => {
+            if (res.success) {
+                noteAiResult.value = res.data
+                const parsed = parseNoteQuestions(res.data)
+                if (parsed.length > 0) {
+                    noteQuizQuestions.value = parsed
+                } else {
+                    noteQuizMode.value = false
+                }
+            } else {
+                noteQuizMode.value = false
+                noteAiResult.value = '生成失败：' + (res.message || '未知错误')
+            }
+        })
+        .catch(() => { noteQuizMode.value = false; noteAiResult.value = '请求异常，请稍后重试' })
+        .finally(() => { noteAiLoading.value = false; row._generating = false })
+}
+
+const handleNoteReview = (row) => {
+    noteAiDialogTitle.value = `✨ AI 批改 —— 「${row.title}」`
+    noteAiResult.value = ''
+    noteQuizMode.value = false
+    noteAiLoading.value = true
+    noteAiDialogVisible.value = true
+    row._reviewing = true
+
+    reviewNote(row.id)
+        .then(res => {
+            if (res.success) {
+                noteAiResult.value = res.data
+            } else {
+                noteAiResult.value = '批改失败：' + (res.message || '未知错误')
+            }
+        })
+        .catch(() => { noteAiResult.value = '请求异常，请稍后重试' })
+        .finally(() => { noteAiLoading.value = false; row._reviewing = false })
+}
+
+// ===================== AI 历史 =====================
+const aiHistoryList     = ref([])
+const aiHistoryTotal    = ref(0)
+const aiHistoryLoading  = ref(false)
+const aiHistoryPage     = ref(1)
+const aiHistorySize     = ref(10)
+
+const aiHistoryDetailVisible    = ref(false)
+const aiHistoryDetailTitle      = ref('')
+const aiHistoryDetailContent    = ref('')
+const aiHistoryDetailQuizMode   = ref(false)
+const aiHistoryDetailQuestions  = ref([])
+const aiHistoryDetailSubmitted  = ref(false)
+const aiHistoryDetailScore      = ref(0)
+const aiHistoryDetailCorrect    = ref(0)
+const aiHistoryDetailId         = ref(null)
+
+const loadAiHistory = async () => {
+    aiHistoryLoading.value = true
+    try {
+        const res = await getAiHistory(aiHistoryPage.value, aiHistorySize.value)
+        if (res.success) {
+            aiHistoryList.value  = res.data.records || []
+            aiHistoryTotal.value = res.data.total   || 0
+        }
+    } catch (e) {
+        showMessage('加载AI历史失败', 'error')
+    } finally {
+        aiHistoryLoading.value = false
+    }
+}
+
+const viewAiHistoryDetail = (item) => {
+    aiHistoryDetailId.value = item.id
+    aiHistoryDetailContent.value = item.content || ''
+    aiHistoryDetailSubmitted.value = false
+    aiHistoryDetailScore.value = 0
+    aiHistoryDetailCorrect.value = 0
+
+    if (item.type === 'quiz') {
+        aiHistoryDetailTitle.value = `🧩 答题练习 —— 「${item.noteTitle}」`
+        const parsed = parseNoteQuestions(item.content || '')
+        if (parsed.length > 0) {
+            aiHistoryDetailQuizMode.value = true
+            aiHistoryDetailQuestions.value = parsed
+            // 如果已有得分，显示为已提交
+            if (item.score != null) {
+                aiHistoryDetailSubmitted.value = true
+                aiHistoryDetailScore.value = item.score
+                aiHistoryDetailCorrect.value = Math.round(item.score / 20)
+            }
+        } else {
+            aiHistoryDetailQuizMode.value = false
+            aiHistoryDetailQuestions.value = []
+        }
+    } else {
+        aiHistoryDetailTitle.value = `✨ AI 批改 —— 「${item.noteTitle}」`
+        aiHistoryDetailQuizMode.value = false
+        aiHistoryDetailQuestions.value = []
+    }
+
+    aiHistoryDetailVisible.value = true
+}
+
+const submitAiHistoryQuiz = async () => {
+    let correct = 0
+    for (const q of aiHistoryDetailQuestions.value) {
+        if (q.userAnswer === q.answer) correct++
+    }
+    aiHistoryDetailCorrect.value = correct
+    aiHistoryDetailScore.value = correct * 20
+    aiHistoryDetailSubmitted.value = true
+
+    // 保存得分到后端
+    try {
+        await updateAiHistoryScore(aiHistoryDetailId.value, correct * 20)
+        // 更新列表中的得分
+        const item = aiHistoryList.value.find(h => h.id === aiHistoryDetailId.value)
+        if (item) item.score = correct * 20
+    } catch (_) {}
+}
 
 // ---- Article dialog ----
 const articleDialogVisible = ref(false)

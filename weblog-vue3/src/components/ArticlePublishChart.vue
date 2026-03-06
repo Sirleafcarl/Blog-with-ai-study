@@ -26,11 +26,14 @@ import { getDashboardPublishArticleStatisticsInfo } from '@/api/admin/dashboard'
 * */
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear();
-const currentMonth = currentDate.getMonth() + 1;
-const startYear = currentYear;
-const startMonth = currentMonth - 4; // 获取最近三个月的数据
-const endYear = currentYear;
-const endMonth = currentMonth + 2;
+
+// 计算起止月份，使用 Date 对象自动处理跨年（如 -1 月自动转为上年12月）
+const startDateObj = new Date(currentYear, currentDate.getMonth() - 4, 1);
+const endDateObj = new Date(currentYear, currentDate.getMonth() + 2, 1);
+const startYear = startDateObj.getFullYear();
+const startMonth = String(startDateObj.getMonth() + 1).padStart(2, '0');
+const endYear = endDateObj.getFullYear();
+const endMonth = String(endDateObj.getMonth() + 1).padStart(2, '0');
 
 const myData = []
 

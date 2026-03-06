@@ -10,4 +10,10 @@ public interface AiService {
 
     /** AI 批改/点评笔记 */
     Response reviewNote(AiNoteReqVO reqVO);
+
+    /** 查询 AI 历史记录列表 */
+    Response getAiHistory(int current, int size);
+
+    /** 更新历史记录的答题得分 */
+    Response updateHistoryScore(Long historyId, Integer score);
 }
