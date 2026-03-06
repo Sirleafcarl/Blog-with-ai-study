@@ -30,6 +30,7 @@
         <minio.version>8.2.1</minio.version>
         <flexmark.version>0.62.2</flexmark.version>
         <ip2region.version>2.7.0</ip2region.version>
+        <knife4j.version>3.0.3</knife4j.version>
 
         <!-- Maven 相关 -->
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -151,6 +152,13 @@
                 <groupId>org.lionsoul</groupId>
                 <artifactId>ip2region</artifactId>
                 <version>${ip2region.version}</version>
+            </dependency>
+
+            <!-- Knife4j API文档 -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
             </dependency>
 
         </dependencies>

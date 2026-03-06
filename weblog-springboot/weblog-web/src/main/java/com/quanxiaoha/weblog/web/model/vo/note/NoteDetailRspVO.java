@@ -13,6 +13,8 @@ public class NoteDetailRspVO {
     private Long id;
     private String title;
     private String content;
+    private Long categoryId;
+    private String categoryName;
     private String createTime;
     private String updateTime;
 }

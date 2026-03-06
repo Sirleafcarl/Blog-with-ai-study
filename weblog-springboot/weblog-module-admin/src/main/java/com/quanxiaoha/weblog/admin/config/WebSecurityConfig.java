@@ -37,6 +37,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
             .authorizeRequests()
                 .mvcMatchers("/admin/register").permitAll()
+                .mvcMatchers("/doc.html", "/webjars/**", "/swagger-resources/**", "/v2/api-docs/**", "/v3/api-docs/**").permitAll()
                 .mvcMatchers("/admin/**").authenticated()
                 .mvcMatchers("/user/**").authenticated()
                 .anyRequest().permitAll()

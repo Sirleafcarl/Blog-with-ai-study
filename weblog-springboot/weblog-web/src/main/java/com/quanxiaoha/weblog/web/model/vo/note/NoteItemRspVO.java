@@ -14,6 +14,8 @@ public class NoteItemRspVO {
     private String title;
     /** 内容摘要（前100字） */
     private String summary;
+    private Long categoryId;
+    private String categoryName;
     private String createTime;
     private String updateTime;
 }

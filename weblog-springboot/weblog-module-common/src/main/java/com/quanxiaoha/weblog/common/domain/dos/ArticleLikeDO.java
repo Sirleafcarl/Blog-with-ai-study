@@ -14,19 +14,11 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("t_note")
-public class NoteDO {
+@TableName("t_article_like")
+public class ArticleLikeDO {
     @TableId(type = IdType.AUTO)
     private Long id;
-    /** 所属用户名 */
+    private Long articleId;
     private String username;
-    /** 笔记分类id */
-    private Long categoryId;
-    /** 笔记标题 */
-    private String title;
-    /** 笔记内容（Markdown） */
-    private String content;
     private Date createTime;
-    private Date updateTime;
-    private Boolean isDeleted;
 }

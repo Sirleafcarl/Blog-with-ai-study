@@ -49,12 +49,13 @@ public class NoteDaoImpl implements NoteDao {
     }
 
     @Override
-    public IPage<NoteDO> queryPageList(long current, long size, String username, String keyword) {
+    public IPage<NoteDO> queryPageList(long current, long size, String username, String keyword, Long categoryId) {
         Page<NoteDO> page = new Page<>(current, size);
         QueryWrapper<NoteDO> wrapper = new QueryWrapper<>();
         wrapper.lambda()
                 .eq(NoteDO::getUsername, username)
                 .eq(NoteDO::getIsDeleted, false)
+                .eq(Objects.nonNull(categoryId), NoteDO::getCategoryId, categoryId)
                 .like(Objects.nonNull(keyword) && !keyword.isEmpty(), NoteDO::getTitle, keyword)
                 .orderByDesc(NoteDO::getUpdateTime);
         return noteMapper.selectPage(page, wrapper);
