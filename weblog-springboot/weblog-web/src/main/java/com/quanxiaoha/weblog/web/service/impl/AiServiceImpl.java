@@ -2,8 +2,14 @@ package com.quanxiaoha.weblog.web.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.quanxiaoha.weblog.common.Response;
+import com.quanxiaoha.weblog.common.domain.dos.AiHistoryDO;
 import com.quanxiaoha.weblog.common.domain.dos.NoteDO;
+import com.quanxiaoha.weblog.common.domain.mapper.AiHistoryMapper;
 import com.quanxiaoha.weblog.web.dao.NoteDao;
 import com.quanxiaoha.weblog.web.model.vo.ai.AiNoteReqVO;
 import com.quanxiaoha.weblog.web.service.AiService;
@@ -16,7 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -33,6 +40,9 @@ public class AiServiceImpl implements AiService {
 
     @Autowired
     private NoteDao noteDao;
+
+    @Autowired
+    private AiHistoryMapper aiHistoryMapper;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -74,6 +84,9 @@ public class AiServiceImpl implements AiService {
         if (result == null) {
             return Response.fail("AI 服务调用失败，请检查 API Key 配置或稍后重试");
         }
+
+        saveHistory(username, noteDO, "quiz", result);
+
         return Response.success(result);
     }
 
@@ -105,12 +118,72 @@ public class AiServiceImpl implements AiService {
         if (result == null) {
             return Response.fail("AI 服务调用失败，请检查 API Key 配置或稍后重试");
         }
+
+        saveHistory(username, noteDO, "review", result);
+
         return Response.success(result);
     }
 
-    /**
-     * 调用 DashScope OpenAI 兼容接口
-     */
+    @Override
+    public Response getAiHistory(int current, int size) {
+        String username = currentUsername();
+        Page<AiHistoryDO> page = new Page<>(current, size);
+        QueryWrapper<AiHistoryDO> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(AiHistoryDO::getUsername, username)
+                .orderByDesc(AiHistoryDO::getCreateTime);
+        IPage<AiHistoryDO> result = aiHistoryMapper.selectPage(page, wrapper);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (AiHistoryDO h : result.getRecords()) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("id", h.getId());
+            item.put("noteId", h.getNoteId());
+            item.put("noteTitle", h.getNoteTitle());
+            item.put("type", h.getType());
+            item.put("content", h.getContent());
+            item.put("score", h.getScore());
+            item.put("createTime", sdf.format(h.getCreateTime()));
+            items.add(item);
+        }
+
+        Map<String, Object> pageResult = new LinkedHashMap<>();
+        pageResult.put("records", items);
+        pageResult.put("total", result.getTotal());
+        pageResult.put("current", current);
+        pageResult.put("size", size);
+
+        return Response.success(pageResult);
+    }
+
+    @Override
+    public Response updateHistoryScore(Long historyId, Integer score) {
+        String username = currentUsername();
+        UpdateWrapper<AiHistoryDO> wrapper = new UpdateWrapper<>();
+        wrapper.lambda()
+                .set(AiHistoryDO::getScore, score)
+                .eq(AiHistoryDO::getId, historyId)
+                .eq(AiHistoryDO::getUsername, username);
+        int rows = aiHistoryMapper.update(null, wrapper);
+        if (rows == 0) {
+            return Response.fail("记录不存在或无权操作");
+        }
+        return Response.success("ok");
+    }
+
+    private void saveHistory(String username, NoteDO noteDO, String type, String content) {
+        AiHistoryDO history = AiHistoryDO.builder()
+                .username(username)
+                .noteId(noteDO.getId())
+                .noteTitle(noteDO.getTitle())
+                .type(type)
+                .content(content)
+                .createTime(new Date())
+                .build();
+        aiHistoryMapper.insert(history);
+    }
+
     private String callAi(String prompt) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -118,7 +191,6 @@ public class AiServiceImpl implements AiService {
             headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
             headers.set("Authorization", "Bearer " + apiKey);
 
-            // 用 ObjectMapper 序列化 prompt，避免特殊字符转义问题
             String promptJson = objectMapper.writeValueAsString(prompt);
             String requestBody = "{\"model\":\"" + model + "\","
                     + "\"messages\":[{\"role\":\"user\",\"content\":" + promptJson + "}],"
@@ -126,7 +198,6 @@ public class AiServiceImpl implements AiService {
 
             HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
             log.info("==> 调用 DashScope AI, model: {}", model);
-
             log.info("==> 请求 URL: {}", DASHSCOPE_URL);
             log.info("==> 请求 Body: {}", requestBody);
 
