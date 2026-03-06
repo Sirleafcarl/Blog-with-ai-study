@@ -5,6 +5,9 @@ server:
 spring:
   profiles:
     active: dev
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   jackson:
     # 设置后台返参，若字段值为 null, 是否返回
 #    default-property-inclusion: non_null

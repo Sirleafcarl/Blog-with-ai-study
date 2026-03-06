@@ -197,11 +197,32 @@ CREATE TABLE `t_comment`
 -- ----------------------------
 -- Table structure for t_note
 -- ----------------------------
+-- ----------------------------
+-- Table structure for t_note_category
+-- ----------------------------
+DROP TABLE IF EXISTS `t_note_category`;
+CREATE TABLE `t_note_category`
+(
+    `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '分类id',
+    `username`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属用户名',
+    `name`        varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '分类名称',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `is_deleted`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否删除：0否 1是',
+    PRIMARY KEY (`id`) USING BTREE,
+    UNIQUE INDEX `uni_username_name`(`username`, `name`) USING BTREE,
+    INDEX         `idx_username`(`username`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '笔记分类表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for t_note
+-- ----------------------------
 DROP TABLE IF EXISTS `t_note`;
 CREATE TABLE `t_note`
 (
     `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '笔记id',
     `username`    varchar(60)  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '所属用户名',
+    `category_id` bigint(20) UNSIGNED NULL DEFAULT NULL COMMENT '分类id',
     `title`       varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '笔记标题',
     `content`     longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL COMMENT '笔记内容（Markdown）',
     `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -209,6 +230,7 @@ CREATE TABLE `t_note`
     `is_deleted`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '是否删除：0否 1是',
     PRIMARY KEY (`id`) USING BTREE,
     INDEX         `idx_username`(`username`) USING BTREE,
+    INDEX         `idx_category_id`(`category_id`) USING BTREE,
     INDEX         `idx_create_time`(`create_time`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '学习笔记表' ROW_FORMAT = Dynamic;
 

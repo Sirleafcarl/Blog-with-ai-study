@@ -18,4 +18,7 @@ public class UpdateNoteReqVO {
 
     @Size(max = 100000, message = "内容过长")
     private String content;
+
+    /** 笔记分类id（可选） */
+    private Long categoryId;
 }

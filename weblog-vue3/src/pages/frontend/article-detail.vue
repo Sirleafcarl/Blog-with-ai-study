@@ -71,6 +71,20 @@
                                 # {{ item.name }}
                             </div>
                         </div>
+
+                        <!-- 点赞/收藏 -->
+                        <div class="flex items-center gap-4 mt-4 mb-6 border-t border-b border-gray-100 py-4">
+                            <button @click="handleLike"
+                                class="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                                :class="interaction.liked ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-500'">
+                                ❤️ {{ interaction.likeCount || 0 }} 点赞
+                            </button>
+                            <button @click="handleFavorite"
+                                class="flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                                :class="interaction.favorited ? 'bg-yellow-100 text-yellow-600' : 'bg-gray-100 text-gray-600 hover:bg-yellow-50 hover:text-yellow-500'">
+                                ⭐ {{ interaction.favoriteCount || 0 }} 收藏
+                            </button>
+                        </div>
                     </article>
                     <!-- 上下篇 -->
                     <div class="article-footer flex">
@@ -209,6 +223,7 @@ import { getToken } from '@/composables/auth';
 import { ref, reactive } from 'vue'
 import { getCategories } from '@/api/frontend/category'
 import { getTags } from '@/api/frontend/tag'
+import { toggleArticleLike, toggleArticleFavorite, getInteractionStatus } from '@/api/frontend/interaction'
 
 const router = useRouter()
 const route = useRoute()
@@ -254,6 +269,34 @@ function queryArticleDetail(articleId) {
     })
 }
 queryArticleDetail(route.query.articleId);
+
+// ===== 点赞/收藏 =====
+const interaction = reactive({ likeCount: 0, favoriteCount: 0, liked: false, favorited: false })
+
+function loadInteraction() {
+    const articleId = route.query.articleId
+    if (!articleId) return
+    getInteractionStatus(Number(articleId)).then(res => {
+        if (res.success) {
+            Object.assign(interaction, res.data)
+        }
+    })
+}
+loadInteraction()
+
+function handleLike() {
+    if (!getToken()) { router.push('/login'); return }
+    toggleArticleLike(Number(route.query.articleId)).then(res => {
+        if (res.success) loadInteraction()
+    })
+}
+
+function handleFavorite() {
+    if (!getToken()) { router.push('/login'); return }
+    toggleArticleFavorite(Number(route.query.articleId)).then(res => {
+        if (res.success) loadInteraction()
+    })
+}
 
 const goArticleDetail = (articleId) => {
     console.log('跳转详情页' + articleId)

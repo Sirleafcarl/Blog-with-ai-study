@@ -122,20 +122,74 @@
                 <p>AI历史功能即将上线</p>
             </div>
 
-            <!-- 我的点赞（占位） -->
-            <div v-if="activeTab === 'likes'" class="text-center text-gray-400 py-16">
-                <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-                <p>我的点赞功能即将上线</p>
+            <!-- 我的点赞 -->
+            <div v-if="activeTab === 'likes'">
+                <div v-loading="likesLoading">
+                    <div v-if="likesList.length === 0 && !likesLoading" class="text-center text-gray-400 py-16">
+                        <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        <p>还没有点赞的文章</p>
+                    </div>
+                    <div v-else class="space-y-4">
+                        <div v-for="item in likesList" :key="item.id"
+                             @click="$router.push({ path: '/article/detail', query: { articleId: item.id } })"
+                             class="flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700">
+                            <img v-if="item.titleImage" :src="item.titleImage" class="w-24 h-16 rounded object-cover flex-shrink-0" />
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-base font-semibold text-gray-800 dark:text-white truncate">{{ item.title }}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.description }}</p>
+                                <span class="mt-1 text-xs text-gray-400">{{ item.createTime }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center" v-if="likesTotal > likesSize">
+                        <el-pagination
+                            v-model:current-page="likesPage"
+                            v-model:page-size="likesSize"
+                            :page-sizes="[10, 20]"
+                            background
+                            layout="total, sizes, prev, pager, next"
+                            :total="likesTotal"
+                            @size-change="loadMyLikes"
+                            @current-change="loadMyLikes" />
+                    </div>
+                </div>
             </div>
 
-            <!-- 我的收藏（占位） -->
-            <div v-if="activeTab === 'collects'" class="text-center text-gray-400 py-16">
-                <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                </svg>
-                <p>我的收藏功能即将上线</p>
+            <!-- 我的收藏 -->
+            <div v-if="activeTab === 'collects'">
+                <div v-loading="favoritesLoading">
+                    <div v-if="favoritesList.length === 0 && !favoritesLoading" class="text-center text-gray-400 py-16">
+                        <svg class="mx-auto w-12 h-12 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                        </svg>
+                        <p>还没有收藏的文章</p>
+                    </div>
+                    <div v-else class="space-y-4">
+                        <div v-for="item in favoritesList" :key="item.id"
+                             @click="$router.push({ path: '/article/detail', query: { articleId: item.id } })"
+                             class="flex gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700">
+                            <img v-if="item.titleImage" :src="item.titleImage" class="w-24 h-16 rounded object-cover flex-shrink-0" />
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-base font-semibold text-gray-800 dark:text-white truncate">{{ item.title }}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ item.description }}</p>
+                                <span class="mt-1 text-xs text-gray-400">{{ item.createTime }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-center" v-if="favoritesTotal > favoritesSize">
+                        <el-pagination
+                            v-model:current-page="favoritesPage"
+                            v-model:page-size="favoritesSize"
+                            :page-sizes="[10, 20]"
+                            background
+                            layout="total, sizes, prev, pager, next"
+                            :total="favoritesTotal"
+                            @size-change="loadMyFavorites"
+                            @current-change="loadMyFavorites" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -250,6 +304,7 @@ import Header from '@/layouts/components/Header.vue'
 import Footer from '@/layouts/components/Footer.vue'
 import { getUserProfile, updateUserProfile, updateUserPassword, uploadAvatar } from '@/api/frontend/user'
 import { submitUserArticle, updateUserArticle, deleteUserArticle, getMyArticleList, getMyArticleDetail } from '@/api/frontend/userArticle'
+import { getMyLikedArticles, getMyFavoritedArticles } from '@/api/frontend/interaction'
 import { getCategorySelect } from '@/api/admin/category'
 import { selectTags } from '@/api/admin/tag'
 import MdEditor from 'md-editor-v3'
@@ -437,11 +492,59 @@ const switchBlogFilter = (val) => {
     loadMyArticles()
 }
 
-// Watch tab change to load articles when entering 我的博客
+// ===================== 我的点赞 =====================
+const likesList     = ref([])
+const likesTotal    = ref(0)
+const likesLoading  = ref(false)
+const likesPage     = ref(1)
+const likesSize     = ref(10)
+
+const loadMyLikes = async () => {
+    likesLoading.value = true
+    try {
+        const res = await getMyLikedArticles(likesPage.value, likesSize.value)
+        if (res.success) {
+            likesList.value  = res.data.records || []
+            likesTotal.value = res.data.total   || 0
+        }
+    } catch (e) {
+        showMessage('加载点赞列表失败', 'error')
+    } finally {
+        likesLoading.value = false
+    }
+}
+
+// ===================== 我的收藏 =====================
+const favoritesList     = ref([])
+const favoritesTotal    = ref(0)
+const favoritesLoading  = ref(false)
+const favoritesPage     = ref(1)
+const favoritesSize     = ref(10)
+
+const loadMyFavorites = async () => {
+    favoritesLoading.value = true
+    try {
+        const res = await getMyFavoritedArticles(favoritesPage.value, favoritesSize.value)
+        if (res.success) {
+            favoritesList.value  = res.data.records || []
+            favoritesTotal.value = res.data.total   || 0
+        }
+    } catch (e) {
+        showMessage('加载收藏列表失败', 'error')
+    } finally {
+        favoritesLoading.value = false
+    }
+}
+
+// Watch tab change to load data
 watch(activeTab, (val) => {
     if (val === 'blogs') {
         loadCategoryOptions()
         loadMyArticles()
+    } else if (val === 'likes') {
+        loadMyLikes()
+    } else if (val === 'collects') {
+        loadMyFavorites()
     }
 })
 

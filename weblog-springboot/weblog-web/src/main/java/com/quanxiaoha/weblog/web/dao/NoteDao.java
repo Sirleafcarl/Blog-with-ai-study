@@ -13,5 +13,5 @@ public interface NoteDao {
 
     NoteDO queryById(Long id, String username);
 
-    IPage<NoteDO> queryPageList(long current, long size, String username, String keyword);
+    IPage<NoteDO> queryPageList(long current, long size, String username, String keyword, Long categoryId);
 }

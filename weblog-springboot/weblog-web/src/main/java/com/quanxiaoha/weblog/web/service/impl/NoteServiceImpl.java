@@ -3,7 +3,9 @@ package com.quanxiaoha.weblog.web.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.quanxiaoha.weblog.common.PageResponse;
 import com.quanxiaoha.weblog.common.Response;
+import com.quanxiaoha.weblog.common.domain.dos.NoteCategoryDO;
 import com.quanxiaoha.weblog.common.domain.dos.NoteDO;
+import com.quanxiaoha.weblog.web.dao.NoteCategoryDao;
 import com.quanxiaoha.weblog.web.dao.NoteDao;
 import com.quanxiaoha.weblog.web.model.vo.note.*;
 import com.quanxiaoha.weblog.web.service.NoteService;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,9 @@ public class NoteServiceImpl implements NoteService {
 
     @Autowired
     private NoteDao noteDao;
+
+    @Autowired
+    private NoteCategoryDao noteCategoryDao;
 
     /** 获取当前登录用户名 */
     private String currentUsername() {
@@ -40,6 +46,7 @@ public class NoteServiceImpl implements NoteService {
                 .username(username)
                 .title(reqVO.getTitle())
                 .content(reqVO.getContent() == null ? "" : reqVO.getContent())
+                .categoryId(reqVO.getCategoryId())
                 .isDeleted(false)
                 .createTime(new Date())
                 .updateTime(new Date())
@@ -61,6 +68,7 @@ public class NoteServiceImpl implements NoteService {
                 .id(reqVO.getId())
                 .title(reqVO.getTitle())
                 .content(reqVO.getContent() == null ? "" : reqVO.getContent())
+                .categoryId(reqVO.getCategoryId())
                 .updateTime(new Date())
                 .build();
         noteDao.updateNote(noteDO);
@@ -85,10 +93,18 @@ public class NoteServiceImpl implements NoteService {
         if (note == null) {
             return Response.fail("笔记不存在");
         }
+        // 查询分类名称
+        String categoryName = null;
+        if (note.getCategoryId() != null) {
+            NoteCategoryDO cat = noteCategoryDao.queryById(note.getCategoryId(), username);
+            if (cat != null) categoryName = cat.getName();
+        }
         NoteDetailRspVO vo = NoteDetailRspVO.builder()
                 .id(note.getId())
                 .title(note.getTitle())
                 .content(note.getContent())
+                .categoryId(note.getCategoryId())
+                .categoryName(categoryName)
                 .createTime(DATETIME_FMT.format(note.getCreateTime()))
                 .updateTime(DATETIME_FMT.format(note.getUpdateTime()))
                 .build();
@@ -99,7 +115,12 @@ public class NoteServiceImpl implements NoteService {
     public PageResponse listNotes(QueryNotePageListReqVO reqVO) {
         String username = currentUsername();
         IPage<NoteDO> page = noteDao.queryPageList(
-                reqVO.getCurrent(), reqVO.getSize(), username, reqVO.getKeyword());
+                reqVO.getCurrent(), reqVO.getSize(), username, reqVO.getKeyword(), reqVO.getCategoryId());
+
+        // 批量查询分类名称
+        List<NoteCategoryDO> categories = noteCategoryDao.queryListByUsername(username);
+        Map<Long, String> categoryMap = categories.stream()
+                .collect(Collectors.toMap(NoteCategoryDO::getId, NoteCategoryDO::getName));
 
         List<NoteItemRspVO> list = page.getRecords().stream().map(n -> {
             String content = n.getContent() == null ? "" : n.getContent();
@@ -108,6 +129,8 @@ public class NoteServiceImpl implements NoteService {
                     .id(n.getId())
                     .title(n.getTitle())
                     .summary(summary)
+                    .categoryId(n.getCategoryId())
+                    .categoryName(n.getCategoryId() != null ? categoryMap.get(n.getCategoryId()) : null)
                     .createTime(DATETIME_FMT.format(n.getCreateTime()))
                     .updateTime(DATETIME_FMT.format(n.getUpdateTime()))
                     .build();

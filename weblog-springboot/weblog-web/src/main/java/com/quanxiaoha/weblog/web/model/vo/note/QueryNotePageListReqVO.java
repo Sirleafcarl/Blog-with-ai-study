@@ -8,4 +8,6 @@ public class QueryNotePageListReqVO {
     private Long size = 10L;
     /** 搜索关键词（标题模糊） */
     private String keyword;
+    /** 分类id筛选 */
+    private Long categoryId;
 }
