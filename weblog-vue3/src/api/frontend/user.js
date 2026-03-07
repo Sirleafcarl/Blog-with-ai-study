@@ -19,3 +19,7 @@ export function uploadAvatar(file) {
         headers: { 'Content-Type': 'multipart/form-data' }
     })
 }
+
+export function uploadUserFile(file) {
+    return axios.post("/user/file/upload", file)
+}

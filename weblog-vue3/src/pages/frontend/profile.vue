@@ -386,14 +386,25 @@
             </div>
             <!-- 右侧：元数据面板 -->
             <div style="width:282px; border-left:1px solid #f0f0f0; background:#fafafa; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
-                <!-- 封面图 URL -->
+                <!-- 封面图上传 -->
                 <div class="bg-white rounded-xl p-4 shadow-sm">
                     <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">封面图</p>
-                    <div v-if="articleForm.titleImage"
-                        class="mb-2 rounded-lg overflow-hidden border border-gray-100">
-                        <img :src="articleForm.titleImage" class="w-full h-28 object-cover" alt="cover" />
-                    </div>
-                    <el-input v-model="articleForm.titleImage" placeholder="粘贴图片链接" clearable size="small" />
+                    <el-upload
+                        class="article-cover-uploader"
+                        action="#"
+                        :show-file-list="false"
+                        :auto-upload="false"
+                        :on-change="handleArticleCoverChange">
+                        <img v-if="articleForm.titleImage" :src="articleForm.titleImage"
+                            class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition" alt="cover" />
+                        <div v-else
+                            class="w-full h-32 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition">
+                            <el-icon class="text-2xl text-gray-300 mb-1"><Plus /></el-icon>
+                            <span class="text-xs text-gray-400">点击上传封面图</span>
+                        </div>
+                    </el-upload>
+                    <el-button v-if="articleForm.titleImage" link type="danger" size="small" class="mt-1"
+                        @click="articleForm.titleImage = ''">移除图片</el-button>
                 </div>
                 <!-- 摘要 -->
                 <div class="bg-white rounded-xl p-4 shadow-sm">
@@ -567,7 +578,7 @@ import { useRoute } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
 import Header from '@/layouts/components/Header.vue'
 import Footer from '@/layouts/components/Footer.vue'
-import { getUserProfile, updateUserProfile, updateUserPassword, uploadAvatar } from '@/api/frontend/user'
+import { getUserProfile, updateUserProfile, updateUserPassword, uploadAvatar, uploadUserFile } from '@/api/frontend/user'
 import { submitUserArticle, updateUserArticle, deleteUserArticle, getMyArticleList, getMyArticleDetail } from '@/api/frontend/userArticle'
 import { getMyLikedArticles, getMyFavoritedArticles } from '@/api/frontend/interaction'
 import { createNote, updateNote, deleteNote, getNoteDetail, getNotePageList } from '@/api/admin/note'
@@ -1193,6 +1204,19 @@ const resetArticleForm = () => {
     editingArticleId.value  = null
 }
 
+const handleArticleCoverChange = (file) => {
+    const formData = new FormData()
+    formData.append('file', file.raw)
+    uploadUserFile(formData).then((res) => {
+        if (res.success) {
+            articleForm.titleImage = res.data.url
+            showMessage('封面图上传成功', 'success')
+        } else {
+            showMessage(res.message || '上传失败', 'warning')
+        }
+    })
+}
+
 const openWriteDialog = async () => {
     resetArticleForm()
     articleDialogTitle.value = '写文章'
@@ -1269,3 +1293,10 @@ const handleDeleteArticle = async (row) => {
     } catch (_) {}
 }
 </script>
+
+<style scoped>
+.article-cover-uploader .el-upload {
+    width: 100%;
+    display: block;
+}
+</style>
