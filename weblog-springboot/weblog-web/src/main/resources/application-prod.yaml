@@ -1,9 +1,13 @@
+dashscope:
+  api-key: ${DASHSCOPE_API_KEY:sk-xxx}
+  model: qwen-turbo
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://172.17.0.1:3306/weblog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    url: jdbc:mysql://127.0.0.1:3306/weblog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
     username: root
-    password: qwe123
+    password: ${DB_PASSWORD:Weblog2026!}
     hikari:
       minimum-idle: 5
       maximum-pool-size: 9
@@ -13,9 +17,6 @@ spring:
       max-lifetime: 1800000
       connection-timeout: 30000
       connection-test-query: SELECT 1
-  
-#=================================================================
-# log
-#=================================================================
+
 logging:
   config: classpath:logback-weblog.xml
