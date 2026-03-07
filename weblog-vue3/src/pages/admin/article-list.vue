@@ -182,6 +182,32 @@
                         <el-switch v-model="form.isPublished" />
                     </div>
                 </div>
+                <!-- AI 写作助手 -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                    <p class="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                        <el-icon><MagicStick /></el-icon> AI 写作助手
+                    </p>
+                    <el-input v-model="aiTopic" placeholder="输入文章题目..." size="small" clearable />
+                    <el-button type="primary" size="small" class="mt-2 w-full" :loading="aiGenerating" @click="handleAiGenerate('publish')">
+                        一键生成内容
+                    </el-button>
+                    <p class="text-xs text-blue-400 mt-2 leading-relaxed">AI 将根据题目生成 Markdown 文章草稿，可在编辑器中修改。</p>
+                </div>
+                <!-- AI 润色 & 纠错 -->
+                <div class="bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-100">
+                    <p class="text-xs font-semibold text-violet-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                        <el-icon><MagicStick /></el-icon> AI 润色 &amp; 纠错
+                    </p>
+                    <el-radio-group v-model="aiPolishMode" size="small" class="mb-2" style="width:100%;display:flex">
+                        <el-radio-button label="polish" style="flex:1">润色</el-radio-button>
+                        <el-radio-button label="proofread" style="flex:1">纠错</el-radio-button>
+                        <el-radio-button label="optimize" style="flex:1">建议</el-radio-button>
+                    </el-radio-group>
+                    <el-button type="primary" plain size="small" class="mt-1 w-full" :loading="aiPolishing" @click="handleAiPolish">
+                        分析当前内容
+                    </el-button>
+                    <p class="text-xs text-violet-400 mt-2 leading-relaxed">对已编写的内容进行润色、纠错或提供优化建议。</p>
+                </div>
             </div>
         </el-form>
     </el-dialog>
@@ -270,6 +296,32 @@
                         <el-switch v-model="form.isPublished" />
                     </div>
                 </div>
+                <!-- AI 写作助手 -->
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                    <p class="text-xs font-semibold text-blue-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                        <el-icon><MagicStick /></el-icon> AI 写作助手
+                    </p>
+                    <el-input v-model="aiTopic" placeholder="输入文章题目..." size="small" clearable />
+                    <el-button type="primary" size="small" class="mt-2 w-full" :loading="aiGenerating" @click="handleAiGenerate('edit')">
+                        一键生成内容
+                    </el-button>
+                    <p class="text-xs text-blue-400 mt-2 leading-relaxed">AI 将根据题目生成 Markdown 文章草稿，可在编辑器中修改。</p>
+                </div>
+                <!-- AI 润色 & 纠错 -->
+                <div class="bg-gradient-to-br from-violet-50 to-pink-50 rounded-xl p-4 border border-violet-100">
+                    <p class="text-xs font-semibold text-violet-500 uppercase tracking-wide mb-3 flex items-center gap-1">
+                        <el-icon><MagicStick /></el-icon> AI 润色 &amp; 纠错
+                    </p>
+                    <el-radio-group v-model="aiPolishMode" size="small" class="mb-2" style="width:100%;display:flex">
+                        <el-radio-button label="polish" style="flex:1">润色</el-radio-button>
+                        <el-radio-button label="proofread" style="flex:1">纠错</el-radio-button>
+                        <el-radio-button label="optimize" style="flex:1">建议</el-radio-button>
+                    </el-radio-group>
+                    <el-button type="primary" plain size="small" class="mt-1 w-full" :loading="aiPolishing" @click="handleAiPolish">
+                        分析当前内容
+                    </el-button>
+                    <p class="text-xs text-violet-400 mt-2 leading-relaxed">对已编写的内容进行润色、纠错或提供优化建议。</p>
+                </div>
             </div>
         </el-form>
     </el-dialog>
@@ -296,20 +348,42 @@
             <el-button type="primary" :loading="auditSubmitting" @click="submitAudit">提交审核</el-button>
         </template>
     </el-dialog>
+
+    <!-- AI 润色/纠错 结果对话框 -->
+    <el-dialog v-model="aiPolishDialogVisible" :title="aiPolishDialogTitle" width="680px" :close-on-click-modal="false"
+        :body-style="{ padding: '20px', maxHeight: '70vh', overflow: 'auto' }">
+        <div class="mb-3 flex items-center gap-2">
+            <el-tag :type="aiPolishMode === 'proofread' ? 'danger' : aiPolishMode === 'optimize' ? 'warning' : 'success'" size="small">
+                {{ { proofread: '纠错', optimize: '优化建议', polish: '润色' }[aiPolishMode] }}
+            </el-tag>
+            <span class="text-xs text-gray-400">AI 分析已完成，以下是结果</span>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <div class="ai-md-content" v-html="aiPolishResultHtml"></div>
+        </div>
+        <template #footer>
+            <el-button @click="aiPolishDialogVisible = false">关闭</el-button>
+            <el-button v-if="aiPolishMode === 'polish'" type="primary" @click="applyPolishResult">
+                替换为润色版本
+            </el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { publishArticle, getArticlePageList, deleteArticle, getArticleDetail, updateArticle, updateArticleStatus, auditArticle } from '@/api/admin/article'
 import { uploadFile } from '@/api/admin/file'
 import MdEditor from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import MarkdownIt from 'markdown-it'
 import { showMessage } from '@/composables/util'
 import { useRouter } from 'vue-router'
 import { getCategorySelect } from '@/api/admin/category'
 import { selectTags, getTagSelect } from '@/api/admin/tag'
 import moment from 'moment';
-import { Search, RefreshRight } from '@element-plus/icons-vue'
+import { Search, RefreshRight, MagicStick } from '@element-plus/icons-vue'
+import { generateArticleContent, polishArticleContent } from '@/api/admin/ai'
 import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
@@ -476,6 +550,65 @@ const form = reactive({
 
 const publishArticleFormRef = ref(null)
 const updateArticleFormRef = ref(null)
+const aiTopic = ref('')
+const aiGenerating = ref(false)
+const aiPolishMode = ref('polish')
+const aiPolishing = ref(false)
+const aiPolishResult = ref('')
+const aiPolishDialogVisible = ref(false)
+const aiPolishDialogTitle = ref('AI 分析结果')
+const _md = new MarkdownIt({ html: false, linkify: true, typographer: true })
+const aiPolishResultHtml = computed(() => _md.render(aiPolishResult.value || ''))
+
+const handleAiGenerate = async () => {
+    if (!aiTopic.value.trim()) {
+        showMessage('请输入文章题目', 'warning', 'message')
+        return
+    }
+    aiGenerating.value = true
+    try {
+        const res = await generateArticleContent(aiTopic.value.trim())
+        if (res.success) {
+            form.content = res.data
+            showMessage('AI 内容生成成功，已填入编辑器', 'success', 'message')
+        } else {
+            showMessage(res.message || 'AI 生成失败', 'error', 'message')
+        }
+    } catch (e) {
+        showMessage('AI 生成失败：' + (e.message || '未知错误'), 'error', 'message')
+    } finally {
+        aiGenerating.value = false
+    }
+}
+
+const handleAiPolish = async () => {
+    if (!form.content || !form.content.trim()) {
+        showMessage('编辑器内容为空，请先编写文章', 'warning', 'message')
+        return
+    }
+    aiPolishing.value = true
+    const modeLabel = { proofread: '纠错', optimize: '优化建议', polish: '润色' }[aiPolishMode.value] || 'AI'
+    aiPolishDialogTitle.value = `AI 分析结果 — ${modeLabel}`
+    try {
+        const res = await polishArticleContent(form.content, aiPolishMode.value)
+        if (res.success) {
+            aiPolishResult.value = res.data
+            aiPolishDialogVisible.value = true
+        } else {
+            showMessage(res.message || 'AI 分析失败', 'error', 'message')
+        }
+    } catch (e) {
+        showMessage('AI 分析失败：' + (e.message || '未知错误'), 'error', 'message')
+    } finally {
+        aiPolishing.value = false
+    }
+}
+
+const applyPolishResult = () => {
+    form.content = aiPolishResult.value
+    aiPolishDialogVisible.value = false
+    showMessage('已替换为润色版本', 'success', 'message')
+}
 const rules = {
     title: [
         { required: true, message: '请输入文章标题', trigger: 'blur' },
@@ -727,6 +860,31 @@ const submitAudit = async () => {
     height: 178px;
     text-align: center;
 }
+
+/* AI Response Markdown Rendering */
+.ai-md-content { font-size: 14px; line-height: 1.7; color: #374151; word-break: break-word; }
+.ai-md-content h1, .ai-md-content h2, .ai-md-content h3,
+.ai-md-content h4, .ai-md-content h5, .ai-md-content h6 { font-weight: 600; margin: 16px 0 8px; color: #111827; line-height: 1.4; }
+.ai-md-content h1 { font-size: 1.5em; }
+.ai-md-content h2 { font-size: 1.25em; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+.ai-md-content h3 { font-size: 1.1em; color: #1e3a8a; }
+.ai-md-content p { margin: 8px 0; }
+.ai-md-content ul, .ai-md-content ol { padding-left: 1.6em; margin: 8px 0; }
+.ai-md-content li { margin: 4px 0; }
+.ai-md-content ul li { list-style-type: disc; }
+.ai-md-content ol li { list-style-type: decimal; }
+.ai-md-content strong { font-weight: 700; color: #111827; }
+.ai-md-content em { font-style: italic; }
+.ai-md-content code { background: #f3f4f6; padding: 1px 5px; border-radius: 4px; font-family: 'Consolas','Monaco',monospace; font-size: 0.88em; color: #db2777; }
+.ai-md-content pre { background: #1f2937; color: #f8fafc; padding: 14px 16px; border-radius: 8px; overflow-x: auto; margin: 12px 0; }
+.ai-md-content pre code { background: transparent; color: inherit; padding: 0; font-size: 0.85em; }
+.ai-md-content blockquote { border-left: 4px solid #3b82f6; padding: 4px 14px; margin: 10px 0; color: #6b7280; background: #eff6ff; border-radius: 0 6px 6px 0; }
+.ai-md-content table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.9em; }
+.ai-md-content th, .ai-md-content td { border: 1px solid #d1d5db; padding: 8px 12px; text-align: left; }
+.ai-md-content th { background: #f3f4f6; font-weight: 600; color: #374151; }
+.ai-md-content tr:nth-child(even) td { background: #f9fafb; }
+.ai-md-content hr { border: none; border-top: 2px solid #e5e7eb; margin: 18px 0; }
+.ai-md-content a { color: #3b82f6; text-decoration: underline; }
 
 
 

@@ -19,3 +19,14 @@ export function getAiHistory(current, size) {
 export function updateAiHistoryScore(historyId, score) {
     return axios.post('/user/ai/history/score', { historyId, score })
 }
+
+// 根据题目生成文章内容（Markdown）
+export function generateArticleContent(topic) {
+    return axios.post('/user/ai/generate-article', { topic })
+}
+
+// AI 润色 / 纠错 / 优化文章内容
+// mode: 'polish' | 'proofread' | 'optimize'
+export function polishArticleContent(content, mode) {
+    return axios.post('/user/ai/polish-article', { content, mode })
+}

@@ -5,7 +5,7 @@
             <div class="col-span-6 md:col-span-3 sm:col-span-6">
                 <div class="login-container-left flex justify-center items-center flex-col">
                     <div class="animate__animated animate__bounceInLeft items-center flex flex-col">
-                        <h2 class="font-bold text-4xl mb-7 text-white">Weblog 博客登录</h2>
+                        <h2 class="font-bold text-4xl mb-7 text-white">Cheese 博客登录</h2>
                         <p class="text-white">博客</p>
                         <img src="@/assets/developer.png" class="login-image">
                     </div>
