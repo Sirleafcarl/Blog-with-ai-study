@@ -44,4 +44,19 @@ public class AiController {
         Integer score = Integer.valueOf(body.get("score").toString());
         return aiService.updateHistoryScore(historyId, score);
     }
+
+    @PostMapping("/generate-article")
+    @ApiOperationLog(description = "AI 根据题目生成文章内容")
+    public Response generateArticleContent(@RequestBody Map<String, String> body) {
+        String topic = body.getOrDefault("topic", "");
+        return aiService.generateArticleContent(topic);
+    }
+
+    @PostMapping("/polish-article")
+    @ApiOperationLog(description = "AI 润色/纠错/优化文章内容")
+    public Response polishArticle(@RequestBody Map<String, String> body) {
+        String content = body.getOrDefault("content", "");
+        String mode = body.getOrDefault("mode", "polish");
+        return aiService.polishArticle(content, mode);
+    }
 }

@@ -174,6 +174,69 @@ public class AiServiceImpl implements AiService {
         return Response.success("ok");
     }
 
+    @Override
+    public Response generateArticleContent(String topic) {
+        if (topic == null || topic.trim().isEmpty()) {
+            return Response.fail("题目不能为空");
+        }
+        String prompt = "你是一位专业的博客作者，擅长撰写技术和知识类文章。\n"
+                + "请根据以下题目，生成一篇结构清晰、内容丰富的博客文章。\n"
+                + "要求：\n"
+                + "1. 使用 Markdown 格式\n"
+                + "2. 包含合适的标题层级（## ### 等）\n"
+                + "3. 适当使用列表、代码块、引用等 Markdown 元素\n"
+                + "4. 内容专业、逻辑清晰\n"
+                + "5. 字数在800-1500字之间\n\n"
+                + "题目：" + topic.trim();
+        String result = callAi(prompt);
+        if (result == null) {
+            return Response.fail("AI 服务调用失败，请检查 API Key 配置或稍后重试");
+        }
+        return Response.success(result);
+    }
+
+    @Override
+    public Response polishArticle(String content, String mode) {
+        if (content == null || content.trim().isEmpty()) {
+            return Response.fail("文章内容不能为空，请先在编辑器中写入内容");
+        }
+        String prompt;
+        switch (mode == null ? "polish" : mode) {
+            case "proofread":
+                prompt = "你是一位专业的文章编辑，请对以下博客文章进行全面纠错。\n"
+                        + "要求：\n"
+                        + "1. 检查语法错误、错别字、标点符号错误\n"
+                        + "2. 检查逻辑错误或表述不清的地方\n"
+                        + "3. 用 Markdown 格式输出错误列表，每个错误注明『原文』和『建议修改』\n"
+                        + "4. 最后给出总体评价\n\n"
+                        + "文章内容：\n" + content.trim();
+                break;
+            case "optimize":
+                prompt = "你是一位专业的内容策略师，请对以下博客文章提供结构化的优化建议。\n"
+                        + "要求：\n"
+                        + "1. 分析文章结构是否合理\n"
+                        + "2. 内容是否充实、逻辑是否清晰\n"
+                        + "3. 标题层级和段落划分是否合适\n"
+                        + "4. 用 Markdown 格式输出具体的改进建议，按重要程度排列\n\n"
+                        + "文章内容：\n" + content.trim();
+                break;
+            default: // polish
+                prompt = "你是一位专业的文字润色师，请对以下博客文章进行润色，使其更加流畅、专业、引人入胜。\n"
+                        + "要求：\n"
+                        + "1. 保持原文的核心含义和结构不变\n"
+                        + "2. 改善句式和用词，使文章更加生动\n"
+                        + "3. 确保段落过渡自然\n"
+                        + "4. 直接输出润色后的完整 Markdown 文章，不需要额外说明\n\n"
+                        + "原文：\n" + content.trim();
+                break;
+        }
+        String result = callAi(prompt);
+        if (result == null) {
+            return Response.fail("AI 服务调用失败，请稍后重试");
+        }
+        return Response.success(result);
+    }
+
     private void saveHistory(String username, NoteDO noteDO, String type, String content) {
         AiHistoryDO history = AiHistoryDO.builder()
                 .username(username)

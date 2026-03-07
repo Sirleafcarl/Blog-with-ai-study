@@ -16,4 +16,10 @@ public interface AiService {
 
     /** 更新历史记录的答题得分 */
     Response updateHistoryScore(Long historyId, Integer score);
+
+    /** 根据题目生成博客文章内容（Markdown） */
+    Response generateArticleContent(String topic);
+
+    /** AI 润色 / 纠错 / 优化文章内容 */
+    Response polishArticle(String content, String mode);
 }
