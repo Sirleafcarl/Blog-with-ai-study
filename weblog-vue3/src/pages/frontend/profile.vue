@@ -354,10 +354,15 @@
     <Footer></Footer>
 
     <!-- 写文章 / 编辑文章 对话框 -->
-    <el-dialog v-model="articleDialogVisible" :title="articleDialogTitle" fullscreen :show-close="false" :modal="false">
+    <el-dialog v-model="articleDialogVisible" :title="articleDialogTitle" fullscreen :show-close="false" :modal="false"
+        :body-style="{ padding: '0', overflow: 'hidden' }">
         <template #header>
-            <div class="flex items-center justify-between px-4 py-2 border-b">
-                <h4 class="font-bold text-lg">{{ articleDialogTitle }}</h4>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-5 rounded-full flex-shrink-0"
+                        :class="articleDialogTitle === '写文章' ? 'bg-blue-500' : 'bg-indigo-500'"></div>
+                    <span class="font-semibold text-gray-800 text-base">{{ articleDialogTitle }}</span>
+                </div>
                 <div class="flex gap-2">
                     <el-button @click="articleDialogVisible = false">取消</el-button>
                     <el-button @click="doSubmitArticle(true)" :loading="articleSaving">保存草稿</el-button>
@@ -366,32 +371,62 @@
             </div>
         </template>
 
-        <el-form :model="articleForm" label-position="top" class="p-4">
-            <el-form-item label="标题">
-                <el-input v-model="articleForm.title" placeholder="请输入文章标题" maxlength="40" show-word-limit clearable />
-            </el-form-item>
-            <el-form-item label="摘要">
-                <el-input v-model="articleForm.description" type="textarea" :rows="2" placeholder="请输入文章摘要（160字以内）" maxlength="160" show-word-limit />
-            </el-form-item>
-            <el-form-item label="内容">
-                <MdEditor v-model="articleForm.content" editorId="userArticleEditor" style="width:100%" />
-            </el-form-item>
-            <el-form-item label="分类">
-                <el-select v-model="articleForm.categoryId" placeholder="请选择分类" clearable style="width:200px">
-                    <el-option v-for="c in categoryOptions" :key="c.value" :label="c.label" :value="c.value" />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="标签">
-                <el-select
-                    v-model="articleForm.tags"
-                    multiple filterable remote
-                    allow-create default-first-option
-                    :remote-method="searchTags"
-                    placeholder="输入标签名称"
-                    style="width:400px">
-                    <el-option v-for="t in tagOptions" :key="t.value" :label="t.label" :value="t.value" />
-                </el-select>
-            </el-form-item>
+        <el-form :model="articleForm" label-position="top"
+            style="display:flex; height:calc(100vh - 56px); overflow:hidden;">
+            <!-- 左侧：标题 + 编辑器 -->
+            <div style="flex:1; display:flex; flex-direction:column; padding:16px 12px 0 20px; min-width:0; overflow:hidden;">
+                <el-form-item style="margin-bottom:12px;">
+                    <el-input v-model="articleForm.title" placeholder="请输入文章标题..." size="large"
+                        maxlength="40" show-word-limit clearable />
+                </el-form-item>
+                <el-form-item style="flex:1; margin-bottom:0; min-height:0;">
+                    <MdEditor v-model="articleForm.content" editorId="userArticleEditor"
+                        style="height:calc(100vh - 166px); width:100%;" />
+                </el-form-item>
+            </div>
+            <!-- 右侧：元数据面板 -->
+            <div style="width:282px; border-left:1px solid #f0f0f0; background:#fafafa; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <!-- 封面图 URL -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">封面图</p>
+                    <div v-if="articleForm.titleImage"
+                        class="mb-2 rounded-lg overflow-hidden border border-gray-100">
+                        <img :src="articleForm.titleImage" class="w-full h-28 object-cover" alt="cover" />
+                    </div>
+                    <el-input v-model="articleForm.titleImage" placeholder="粘贴图片链接" clearable size="small" />
+                </div>
+                <!-- 摘要 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">摘要</p>
+                    <el-input v-model="articleForm.description" type="textarea" :rows="4"
+                        placeholder="请输入文章摘要（160字以内）" maxlength="160" show-word-limit />
+                </div>
+                <!-- 分类 & 标签 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">分类 &amp; 标签</p>
+                    <el-form-item label="分类">
+                        <el-select v-model="articleForm.categoryId" placeholder="请选择分类" clearable style="width:100%">
+                            <el-option v-for="c in categoryOptions" :key="c.value" :label="c.label" :value="c.value" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="标签" style="margin-bottom:0">
+                        <el-select
+                            v-model="articleForm.tags"
+                            multiple filterable remote
+                            allow-create default-first-option
+                            :remote-method="searchTags"
+                            placeholder="输入标签名称"
+                            style="width:100%">
+                            <el-option v-for="t in tagOptions" :key="t.value" :label="t.label" :value="t.value" />
+                        </el-select>
+                    </el-form-item>
+                </div>
+                <!-- 提示 -->
+                <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                    <p class="text-xs text-amber-700 font-medium mb-1">投稿说明</p>
+                    <p class="text-xs text-amber-600 leading-relaxed">文章提交后将进入审核队列，审核通过后方可公开展示。草稿随时可编辑。</p>
+                </div>
+            </div>
         </el-form>
     </el-dialog>
 
