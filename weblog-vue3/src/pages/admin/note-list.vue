@@ -45,24 +45,26 @@
             <el-table-column label="内容摘要" prop="summary" min-width="220" show-overflow-tooltip />
             <el-table-column label="更新时间" prop="updateTime" width="150" />
             <el-table-column label="创建时间" prop="createTime" width="150" />
-            <el-table-column label="操作" width="320" fixed="right">
+            <el-table-column label="操作" width="300" fixed="right">
                 <template #default="scope">
-                    <el-button size="small" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-                    <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
-                    <el-button
-                        size="small"
-                        type="warning"
-                        :loading="scope.row._generating"
-                        @click="handleGenerateQuestions(scope.row)">
-                        🧩 生成题目
-                    </el-button>
-                    <el-button
-                        size="small"
-                        type="success"
-                        :loading="scope.row._reviewing"
-                        @click="handleReviewNote(scope.row)">
-                        ✨ AI批改
-                    </el-button>
+                    <el-space wrap :size="6">
+                        <el-button size="small" type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+                        <el-button size="small" type="danger" @click="handleDelete(scope.row)">删除</el-button>
+                        <el-button
+                            size="small"
+                            type="warning"
+                            :loading="scope.row._generating"
+                            @click="handleGenerateQuestions(scope.row)">
+                            🧩 生成题目
+                        </el-button>
+                        <el-button
+                            size="small"
+                            type="success"
+                            :loading="scope.row._reviewing"
+                            @click="handleReviewNote(scope.row)">
+                            ✨ AI批改
+                        </el-button>
+                    </el-space>
                 </template>
             </el-table-column>
         </el-table>

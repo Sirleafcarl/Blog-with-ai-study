@@ -58,18 +58,16 @@
                         </button>
                         <div class="relative hidden md:block">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                <svg class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 20 20">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                         stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                                 </svg>
-                                <span class="sr-only">Search icon</span>
                             </div>
                             <input type="text" id="search-navbar"
                                 v-model="searchKeyword"
                                 @keyup.enter="doSearch"
-                                class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="输入关键词回车搜索...">
+                                class="block w-52 p-2 pl-9 pr-3 text-sm text-gray-800 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-300 focus:border-transparent focus:bg-white focus:w-64 transition-all duration-200 outline-none placeholder-gray-400"
+                                placeholder="搜索文章...">
                         </div>
                         <button data-collapse-toggle="navbar-search" type="button"
                             class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"

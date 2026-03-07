@@ -69,29 +69,24 @@
                     <el-switch v-model="scope.row.isPublished" @change="onStatusChange(scope.row)" />
                 </template>
             </el-table-column>
-            <el-table-column label="操作">
+            <el-table-column label="操作" width="240" fixed="right">
                 <template #default="scope">
-                    <el-button size="small" @click="showArticleUpdateEditorShow(scope.row)">
-                        <el-icon class="mr-1">
-                            <Edit />
-                        </el-icon>
-                        编辑</el-button>
-                    <el-button size="small" @click="previewArticle(scope.row)">
-                        <el-icon class="mr-1">
-                            <View />
-                        </el-icon>
-                        预览</el-button>
-                    <el-button type="danger" size="small" @click="deleteArticleSubmit(scope.row)">
-                        <el-icon class="mr-1">
-                            <Delete />
-                        </el-icon>
-                        删除
-                    </el-button>
-                    <el-button
-                        v-if="scope.row.status === 1"
-                        type="success"
-                        size="small"
-                        @click="openAuditDialog(scope.row)">审核</el-button>
+                    <el-space wrap :size="6">
+                        <el-button size="small" @click="showArticleUpdateEditorShow(scope.row)">
+                            <el-icon class="mr-1"><Edit /></el-icon>编辑
+                        </el-button>
+                        <el-button size="small" @click="previewArticle(scope.row)">
+                            <el-icon class="mr-1"><View /></el-icon>预览
+                        </el-button>
+                        <el-button type="danger" size="small" @click="deleteArticleSubmit(scope.row)">
+                            <el-icon class="mr-1"><Delete /></el-icon>删除
+                        </el-button>
+                        <el-button
+                            v-if="scope.row.status === 1"
+                            type="success"
+                            size="small"
+                            @click="openAuditDialog(scope.row)">审核</el-button>
+                    </el-space>
                 </template>
             </el-table-column>
         </el-table>
@@ -104,122 +99,178 @@
     </el-card>
 
     <!-- 写博客 -->
-    <el-dialog v-model="isArticlePublishEditorShow" fullscreen="true" :show-close="false" :modal="false">
-
-        <template #header="{ close, titleId, titleClass }">
-            <div class="">
-                <div class="my-header flex justify-between">
-                        <h4 class="font-bold">写文章</h4>
-                        <div>
-                            <el-button @click="isArticlePublishEditorShow = false">取消</el-button>
-                            <el-button type="primary" @click="onSubmit">
-                                <el-icon class="mr-1">
-                                    <Promotion />
-                                </el-icon>
-                                发布
-                            </el-button>
-                        </div>
-                    </div>
-            </div>
-        </template>
-        <el-form :model="form" ref="publishArticleFormRef" label-position="top" :size="large" :rules="rules">
-            <el-form-item label="标题" prop="title">
-                <el-input v-model="form.title" autocomplete="off" size="large" maxlength="40" show-word-limit clearable />
-            </el-form-item>
-            <el-form-item label="内容" prop="content">
-                <!-- <MDEditor :content="form.content" @event="handleMd"></MDEditor> -->
-                <MdEditor v-model="form.content" @onUploadImg="onUploadImg" editorId="publishArticleEditor" />
-            </el-form-item>
-            <el-form-item label="封面" prop="titleImage">
-                <el-upload class="avatar-uploader" action="#" :on-change="handleTitleImageChange" :auto-upload="false"
-                    :show-file-list="false" :on-success="handleAvatarSuccess">
-                    <img v-if="form.titleImage" :src="form.titleImage" class="avatar" />
-                    <el-icon v-else class="avatar-uploader-icon">
-                        <Plus />
-                    </el-icon>
-                </el-upload>
-            </el-form-item>
-            <el-form-item label="摘要" prop="description">
-                <el-input v-model="form.description" :rows="3" type="textarea" placeholder="请输入文章摘要" />
-            </el-form-item>
-            <el-form-item label="分类" prop="categoryId">
-                <el-select v-model="form.categoryId" clearable placeholder="---请选择---" size="large">
-                    <el-option v-for="item in categories" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="标签" prop="tags">
-                <!-- 标签选择 -->
-                <el-select v-model="form.tags" multiple filterable remote reserve-keyword placeholder="---请输入---"
-                    remote-show-suffix :remote-method="remoteMethod" allow-create default-first-option
-                    :loading="tagSelectLoading" size="large">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="是否置顶">
-                <el-switch v-model="form.isTop" />
-            </el-form-item>
-            <el-form-item label="是否发布">
-                <el-switch v-model="form.isPublished" />
-            </el-form-item>
-
-        </el-form>
-    </el-dialog>
-
-    <!-- 编辑博客 -->
-    <el-dialog v-model="isArticleUpdateEditorShow" fullscreen="true" :show-close="false" :modal="false">
-        <template #header="{ close, titleId, titleClass }">
-            <div class="my-header flex items-center justify-between">
-                <h4 class="font-bold">编辑文章</h4>
-                <div>
-                    <el-button @click="hideArticleUpdateEditor">取消</el-button>
-                    <el-button type="primary" @click="updateSubmit">
-                        <el-icon class="mr-1">
-                            <Promotion />
-                        </el-icon>
-                        提交
+    <el-dialog v-model="isArticlePublishEditorShow" fullscreen :show-close="false" :modal="false"
+        :body-style="{ padding: '0', overflow: 'hidden' }">
+        <template #header>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-5 rounded-full bg-blue-500 flex-shrink-0"></div>
+                    <span class="font-semibold text-gray-800 text-base">写文章</span>
+                </div>
+                <div class="flex gap-2">
+                    <el-button @click="isArticlePublishEditorShow = false">取消</el-button>
+                    <el-button type="primary" @click="onSubmit">
+                        <el-icon class="mr-1"><Promotion /></el-icon>发布
                     </el-button>
                 </div>
             </div>
         </template>
-        <el-form :model="form" ref="updateArticleFormRef" label-position="top" :size="large" :rules="rules">
-            <el-form-item label="标题" prop="title">
-                <el-input v-model="form.title" autocomplete="off" size="large" maxlength="40" show-word-limit clearable />
-            </el-form-item>
-            <el-form-item label="内容" prop="content">
-                <!-- <MDEditor :content="form.content" @event="handleMd"></MDEditor> -->
-                <MdEditor v-model="form.content" @onUploadImg="onUploadImg" editorId="updateArticleEditor" />
-            </el-form-item>
-            <el-form-item label="封面" prop="titleImage">
-                <el-upload class="avatar-uploader" action="#" :on-change="handleTitleImageChange" :auto-upload="false"
-                    :show-file-list="false" :on-success="handleAvatarSuccess">
-                    <img v-if="form.titleImage" :src="form.titleImage" class="avatar" />
-                    <el-icon v-else class="avatar-uploader-icon">
-                        <Plus />
-                    </el-icon>
-                </el-upload>
-            </el-form-item>
-            <el-form-item label="摘要" prop="description">
-                <el-input v-model="form.description" :rows="3" type="textarea" placeholder="请输入文章摘要" />
-            </el-form-item>
-            <el-form-item label="分类" prop="categoryId">
-                <el-select v-model="form.categoryId" clearable placeholder="---请选择---" size="large">
-                    <el-option v-for="item in categories" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="标签" prop="tags">
-                <!-- 标签选择 -->
-                <el-select v-model="form.tags" multiple filterable remote reserve-keyword placeholder="---请输入---"
-                    remote-show-suffix :remote-method="remoteMethod" allow-create default-first-option
-                    :loading="tagSelectLoading" size="large">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="是否置顶">
-                <el-switch v-model="form.isTop" />
-            </el-form-item>
-            <el-form-item label="是否发布">
-                <el-switch v-model="form.isPublished" />
-            </el-form-item>
+        <el-form :model="form" ref="publishArticleFormRef" label-position="top" :rules="rules"
+            style="display:flex; height:calc(100vh - 56px); overflow:hidden;">
+            <!-- 左侧：标题 + 编辑器 -->
+            <div style="flex:1; display:flex; flex-direction:column; padding:16px 12px 0 20px; min-width:0; overflow:hidden;">
+                <el-form-item prop="title" style="margin-bottom:12px;">
+                    <el-input v-model="form.title" placeholder="请输入文章标题..." size="large"
+                        maxlength="40" show-word-limit clearable />
+                </el-form-item>
+                <el-form-item prop="content" style="flex:1; margin-bottom:0; min-height:0;">
+                    <MdEditor v-model="form.content" @onUploadImg="onUploadImg"
+                        editorId="publishArticleEditor" style="height:calc(100vh - 166px);" />
+                </el-form-item>
+            </div>
+            <!-- 右侧：元数据面板 -->
+            <div style="width:282px; border-left:1px solid #f0f0f0; background:#fafafa; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <!-- 封面图 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">封面图</p>
+                    <el-form-item prop="titleImage" style="margin-bottom:0">
+                        <el-upload class="avatar-uploader" action="#" :on-change="handleTitleImageChange"
+                            :auto-upload="false" :show-file-list="false" :on-success="handleAvatarSuccess">
+                            <img v-if="form.titleImage" :src="form.titleImage" class="avatar" />
+                            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+                        </el-upload>
+                    </el-form-item>
+                </div>
+                <!-- 文章摘要 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">摘要</p>
+                    <el-form-item prop="description" style="margin-bottom:0">
+                        <el-input v-model="form.description" :rows="4" type="textarea" placeholder="请输入文章摘要" />
+                    </el-form-item>
+                </div>
+                <!-- 分类 & 标签 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">分类 &amp; 标签</p>
+                    <el-form-item label="分类" prop="categoryId">
+                        <el-select v-model="form.categoryId" clearable placeholder="请选择分类" style="width:100%">
+                            <el-option v-for="item in categories" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="标签" prop="tags" style="margin-bottom:0">
+                        <el-select v-model="form.tags" multiple filterable remote reserve-keyword placeholder="请输入标签"
+                            remote-show-suffix :remote-method="remoteMethod" allow-create default-first-option
+                            :loading="tagSelectLoading" style="width:100%">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                    </el-form-item>
+                </div>
+                <!-- 文章设置 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">文章设置</p>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                        <div>
+                            <p class="text-sm text-gray-700 font-medium">置顶</p>
+                            <p class="text-xs text-gray-400">固定在列表顶部</p>
+                        </div>
+                        <el-switch v-model="form.isTop" />
+                    </div>
+                    <div class="flex items-center justify-between pt-2">
+                        <div>
+                            <p class="text-sm text-gray-700 font-medium">立即发布</p>
+                            <p class="text-xs text-gray-400">公开可见</p>
+                        </div>
+                        <el-switch v-model="form.isPublished" />
+                    </div>
+                </div>
+            </div>
+        </el-form>
+    </el-dialog>
+
+    <!-- 编辑博客 -->
+    <el-dialog v-model="isArticleUpdateEditorShow" fullscreen :show-close="false" :modal="false"
+        :body-style="{ padding: '0', overflow: 'hidden' }">
+        <template #header>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-1 h-5 rounded-full bg-indigo-500 flex-shrink-0"></div>
+                    <span class="font-semibold text-gray-800 text-base">编辑文章</span>
+                </div>
+                <div class="flex gap-2">
+                    <el-button @click="hideArticleUpdateEditor">取消</el-button>
+                    <el-button type="primary" @click="updateSubmit">
+                        <el-icon class="mr-1"><Promotion /></el-icon>保存
+                    </el-button>
+                </div>
+            </div>
+        </template>
+        <el-form :model="form" ref="updateArticleFormRef" label-position="top" :rules="rules"
+            style="display:flex; height:calc(100vh - 56px); overflow:hidden;">
+            <!-- 左侧：标题 + 编辑器 -->
+            <div style="flex:1; display:flex; flex-direction:column; padding:16px 12px 0 20px; min-width:0; overflow:hidden;">
+                <el-form-item prop="title" style="margin-bottom:12px;">
+                    <el-input v-model="form.title" placeholder="请输入文章标题..." size="large"
+                        maxlength="40" show-word-limit clearable />
+                </el-form-item>
+                <el-form-item prop="content" style="flex:1; margin-bottom:0; min-height:0;">
+                    <MdEditor v-model="form.content" @onUploadImg="onUploadImg"
+                        editorId="updateArticleEditor" style="height:calc(100vh - 166px);" />
+                </el-form-item>
+            </div>
+            <!-- 右侧：元数据面板 -->
+            <div style="width:282px; border-left:1px solid #f0f0f0; background:#fafafa; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px;">
+                <!-- 封面图 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">封面图</p>
+                    <el-form-item prop="titleImage" style="margin-bottom:0">
+                        <el-upload class="avatar-uploader" action="#" :on-change="handleTitleImageChange"
+                            :auto-upload="false" :show-file-list="false" :on-success="handleAvatarSuccess">
+                            <img v-if="form.titleImage" :src="form.titleImage" class="avatar" />
+                            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+                        </el-upload>
+                    </el-form-item>
+                </div>
+                <!-- 文章摘要 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">摘要</p>
+                    <el-form-item prop="description" style="margin-bottom:0">
+                        <el-input v-model="form.description" :rows="4" type="textarea" placeholder="请输入文章摘要" />
+                    </el-form-item>
+                </div>
+                <!-- 分类 & 标签 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">分类 &amp; 标签</p>
+                    <el-form-item label="分类" prop="categoryId">
+                        <el-select v-model="form.categoryId" clearable placeholder="请选择分类" style="width:100%">
+                            <el-option v-for="item in categories" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="标签" prop="tags" style="margin-bottom:0">
+                        <el-select v-model="form.tags" multiple filterable remote reserve-keyword placeholder="请输入标签"
+                            remote-show-suffix :remote-method="remoteMethod" allow-create default-first-option
+                            :loading="tagSelectLoading" style="width:100%">
+                            <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+                        </el-select>
+                    </el-form-item>
+                </div>
+                <!-- 文章设置 -->
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">文章设置</p>
+                    <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                        <div>
+                            <p class="text-sm text-gray-700 font-medium">置顶</p>
+                            <p class="text-xs text-gray-400">固定在列表顶部</p>
+                        </div>
+                        <el-switch v-model="form.isTop" />
+                    </div>
+                    <div class="flex items-center justify-between pt-2">
+                        <div>
+                            <p class="text-sm text-gray-700 font-medium">立即发布</p>
+                            <p class="text-xs text-gray-400">公开可见</p>
+                        </div>
+                        <el-switch v-model="form.isPublished" />
+                    </div>
+                </div>
+            </div>
         </el-form>
     </el-dialog>
 
@@ -677,9 +728,7 @@ const submitAudit = async () => {
     text-align: center;
 }
 
-.el-select--large {
-    width: 600px;
-}
+
 
 
 </style>
