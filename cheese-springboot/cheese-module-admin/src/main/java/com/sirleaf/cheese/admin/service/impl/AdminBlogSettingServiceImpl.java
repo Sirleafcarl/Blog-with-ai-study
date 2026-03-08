@@ -1,6 +1,7 @@
 package com.sirleaf.cheese.admin.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sirleaf.cheese.admin.dao.AdminUserDao;
 import com.sirleaf.cheese.admin.model.vo.blogsetting.QueryBlogSettingRspVO;
 import com.sirleaf.cheese.admin.model.vo.blogsetting.UpdateBlogSettingReqVO;
 import com.sirleaf.cheese.admin.model.vo.user.QueryUserDetailRspVO;
@@ -8,7 +9,9 @@ import com.sirleaf.cheese.admin.service.AdminBlogSettingService;
 import com.sirleaf.cheese.common.Response;
 import com.sirleaf.cheese.common.domain.mapper.BlogSettingMapper;
 import com.sirleaf.cheese.common.domain.dos.BlogSettingDO;
+import com.sirleaf.cheese.common.domain.dos.UserDO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +25,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class AdminBlogSettingServiceImpl extends ServiceImpl<BlogSettingMapper, BlogSettingDO> implements AdminBlogSettingService {
+
+    @Autowired
+    private AdminUserDao userDao;
     @Override
     public Response updateBlogSetting(UpdateBlogSettingReqVO updateBlogSettingReqVO) {
         BlogSettingDO blogSettingDO = BlogSettingDO.builder()
@@ -74,9 +80,10 @@ public class AdminBlogSettingServiceImpl extends ServiceImpl<BlogSettingMapper, 
                 .roles(roles)
                 .build();
 
-        BlogSettingDO blogSettingDO = getOne(null);
-        if (blogSettingDO != null) {
-            queryBlogSettingRspVO.setAvatar(blogSettingDO.getAvatar());
+        // 返回用户自己的头像，而非博客设置头像
+        UserDO userDO = userDao.selectByUsername(username);
+        if (userDO != null) {
+            queryBlogSettingRspVO.setAvatar(userDO.getAvatar());
         }
         return Response.success(queryBlogSettingRspVO);
     }

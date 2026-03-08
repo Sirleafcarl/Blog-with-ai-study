@@ -19,4 +19,7 @@ spring:
       connection-test-query: SELECT 1
 
 logging:
-  config: classpath:logback-cheese.xml
+  config: classpath:logback-Cheese.xml
+
+minio:
+  endpoint: http://47.99.97.113:9000

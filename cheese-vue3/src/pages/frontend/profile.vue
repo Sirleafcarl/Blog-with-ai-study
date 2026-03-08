@@ -7,10 +7,18 @@
         <div class="flex flex-col items-center mb-8">
             <div class="relative">
                 <img
-                    :src="profile.avatar || 'https://flowbite.com/docs/images/people/profile-picture-5.jpg'"
+                    v-if="profile.avatar"
+                    :src="profile.avatar"
                     class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
                     alt="avatar"
                 />
+                <span
+                    v-else
+                    class="w-24 h-24 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-white text-3xl font-bold select-none"
+                    :style="getAvatarStyle(profile.username, 96)"
+                >
+                    {{ profile.username ? profile.username.charAt(0).toUpperCase() : '?' }}
+                </span>
             </div>
             <h2 class="mt-3 text-2xl font-bold text-gray-800 dark:text-white">
                 {{ profile.nickname || profile.username }}
@@ -637,6 +645,36 @@ import 'md-editor-v3/lib/style.css'
 import MarkdownIt from 'markdown-it'
 import { showMessage } from '@/composables/util'
 import { ElMessageBox } from 'element-plus'
+import { useStore } from 'vuex'
+
+const store = useStore()
+
+const AVATAR_GRADIENTS = [
+    ['#667eea', '#764ba2'],
+    ['#f093fb', '#f5576c'],
+    ['#4facfe', '#00f2fe'],
+    ['#43e97b', '#38f9d7'],
+    ['#fa709a', '#fee140'],
+    ['#a18cd1', '#fbc2eb'],
+    ['#fccb90', '#d57eeb'],
+    ['#a1c4fd', '#c2e9fb'],
+    ['#fd7043', '#ff8a65'],
+    ['#26c6da', '#00acc1'],
+]
+function getAvatarStyle(username, size) {
+    const idx = username
+        ? username.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_GRADIENTS.length
+        : 0
+    const [from, to] = AVATAR_GRADIENTS[idx]
+    return {
+        width: size + 'px',
+        height: size + 'px',
+        fontSize: Math.round(size * 0.38) + 'px',
+        flexShrink: 0,
+        background: `linear-gradient(135deg, ${from}, ${to})`,
+        boxShadow: `0 4px 15px ${from}66`,
+    }
+}
 
 const route = useRoute()
 
@@ -743,6 +781,8 @@ const saveEdit = async () => {
             })
             if (res.success) {
                 Object.assign(profile, editForm)
+                // 同步更新 store 中的用户头像，右上角立即生效
+                store.commit('SET_USERINFO', { ...store.state.user, avatar: editForm.avatar })
                 showMessage('保存成功', 'success')
                 editDialogVisible.value = false
             } else {

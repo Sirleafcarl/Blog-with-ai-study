@@ -42,6 +42,9 @@
                                 <span class="text-gray-500 text-sm">还没有账号？</span>
                                 <el-link type="primary" @click="goToRegister" class="ml-1">立即注册</el-link>
                             </div>
+                            <div class="text-center mt-3">
+                                <el-link type="info" @click="guestLogin">游客浏览（无需登录）</el-link>
+                            </div>
                         </el-form>
                     </div>
 
@@ -124,6 +127,10 @@ const onSubmit = () => {
 
 const goToRegister = () => {
     router.push('/register')
+}
+
+const guestLogin = () => {
+    router.push('/')
 }
 
 function onKeyUp(e) {

@@ -88,8 +88,12 @@
                         id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown"
                         data-dropdown-placement="bottom">
                         <span class="sr-only">Open user menu</span>
-                        <!-- 用户登录头像 -->
-                        <img class="w-8 h-8 rounded-full" :src="$store.state.setting.avatar" alt="user photo">
+                        <!-- 用户登录头像：有头像显示图片，无头像显示渐变首字母 -->
+                        <img v-if="$store.state.user.avatar" class="w-8 h-8 rounded-full object-cover" :src="$store.state.user.avatar" alt="user photo">
+                        <span v-else class="flex items-center justify-center rounded-full text-white font-bold select-none"
+                            :style="getAvatarStyle($store.state.user.username, 32)">
+                            {{ $store.state.user.username ? $store.state.user.username.charAt(0).toUpperCase() : '?' }}
+                        </span>
                     </button>
                     <!-- Dropdown menu -->
                     <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600"
@@ -268,11 +272,39 @@ const doSearch = () => {
 const logout = () => {
     console.log('登出')
     store.dispatch('logout')
-
+    isLogin.value = false
     // 提示登出成功
     showMessage('退出登录成功', 'success')
+    // 跳转登录页
+    router.push('/login')
+}
 
-    isLogin.value = false
+// 根据用户名生成渐变色默认头像样式
+const AVATAR_GRADIENTS = [
+    ['#667eea', '#764ba2'],
+    ['#f093fb', '#f5576c'],
+    ['#4facfe', '#00f2fe'],
+    ['#43e97b', '#38f9d7'],
+    ['#fa709a', '#fee140'],
+    ['#a18cd1', '#fbc2eb'],
+    ['#fccb90', '#d57eeb'],
+    ['#a1c4fd', '#c2e9fb'],
+    ['#fd7043', '#ff8a65'],
+    ['#26c6da', '#00acc1'],
+]
+function getAvatarStyle(username, size) {
+    const idx = username
+        ? username.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % AVATAR_GRADIENTS.length
+        : 0
+    const [from, to] = AVATAR_GRADIENTS[idx]
+    return {
+        width: size + 'px',
+        height: size + 'px',
+        fontSize: Math.round(size * 0.45) + 'px',
+        flexShrink: 0,
+        background: `linear-gradient(135deg, ${from}, ${to})`,
+        boxShadow: `0 2px 8px ${from}66`,
+    }
 }
 
 </script>
