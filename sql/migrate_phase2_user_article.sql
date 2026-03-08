@@ -1,5 +1,5 @@
--- Phase 2: User Article Submission & Admin Review
--- Run this script against your `weblog` database.
+﻿-- Phase 2: User Article Submission & Admin Review
+-- Run this script against your `cheese` database.
 
 ALTER TABLE `t_article`
     ADD COLUMN `author_username` varchar(60) DEFAULT NULL COMMENT '投稿用户名，NULL 表示管理员发布' AFTER `read_num`,

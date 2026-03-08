@@ -1,4 +1,4 @@
-version: '3.9'
+﻿version: '3.9'
 
 # 使用前：复制 .env.example 为 .env 并填入实际密码
 # 启动：docker compose up -d
@@ -8,11 +8,11 @@ services:
   # ── MySQL 8.0 ──────────────────────────────────────────────
   mysql:
     image: mysql:8.0
-    container_name: weblog-mysql
+    container_name: cheese-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-weblog123}
-      MYSQL_DATABASE: ${DB_NAME:-weblog}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-cheese123}
+      MYSQL_DATABASE: ${DB_NAME:-cheese}
       MYSQL_ROOT_HOST: '%'
     ports:
       - "${DB_PORT:-3306}:3306"
@@ -22,7 +22,7 @@ services:
       - ./sql/data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-weblog123}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-cheese123}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -30,9 +30,9 @@ services:
   # ── Spring Boot 后端 ────────────────────────────────────────
   backend:
     build:
-      context: ./weblog-springboot
+      context: ./cheese-springboot
       dockerfile: Dockerfile
-    container_name: weblog-backend
+    container_name: cheese-backend
     restart: unless-stopped
     depends_on:
       mysql:
@@ -41,9 +41,9 @@ services:
       SPRING_PROFILES_ACTIVE: dev
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: ${DB_NAME:-weblog}
+      DB_NAME: ${DB_NAME:-cheese}
       DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-weblog123}
+      DB_PASSWORD: ${DB_PASSWORD:-cheese123}
       DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:-}
     ports:
       - "8081:8081"
@@ -56,14 +56,14 @@ services:
   # ── Nginx 前端 ──────────────────────────────────────────────
   nginx:
     image: nginx:alpine
-    container_name: weblog-nginx
+    container_name: cheese-nginx
     restart: unless-stopped
     depends_on:
       - backend
     ports:
       - "80:80"
     volumes:
-      - ./weblog-vue3/dist:/usr/share/nginx/html:ro
+      - ./cheese-vue3/dist:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
 volumes:
