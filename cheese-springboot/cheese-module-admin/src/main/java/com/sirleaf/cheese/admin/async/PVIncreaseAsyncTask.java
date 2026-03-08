@@ -1,0 +1,31 @@
+package com.sirleaf.cheese.admin.async;
+
+import com.sirleaf.cheese.admin.dao.AdminArticleDao;
+import com.sirleaf.cheese.admin.dao.AdminStatisticsArticlePVDao;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+
+@Service
+@Slf4j
+public class PVIncreaseAsyncTask {
+
+    @Autowired
+    private AdminArticleDao articleDao;
+    @Autowired
+    private AdminStatisticsArticlePVDao statisticsArticlePVDao;
+
+    @Async
+    public void handle(Long articleId) {
+        log.info("## 文章被阅读量异步 +1, articleId: {}", articleId);
+        articleDao.readNumIncrease(articleId);
+
+        Date currDate = new Date();
+        log.info("## 文章 PV 异步 +1, currDate: {}", currDate);
+        statisticsArticlePVDao.pvIncrease(currDate);
+    }
+}

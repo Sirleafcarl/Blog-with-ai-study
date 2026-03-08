@@ -1,0 +1,51 @@
+package com.sirleaf.cheese.admin.controller;
+
+import com.sirleaf.cheese.admin.model.vo.category.AddCategoryReqVO;
+import com.sirleaf.cheese.admin.model.vo.category.DeleteCategoryReqVO;
+import com.sirleaf.cheese.admin.model.vo.category.QueryCategoryPageListReqVO;
+import com.sirleaf.cheese.admin.service.AdminCategoryService;
+import com.sirleaf.cheese.common.PageResponse;
+import com.sirleaf.cheese.common.Response;
+import com.sirleaf.cheese.common.aspect.ApiOperationLog;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("/admin/category")
+public class AdminCategoryController {
+
+    @Autowired
+    private AdminCategoryService categoryService;
+
+    @PostMapping("/add")
+    @ApiOperationLog(description = "新增分类")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Response addCategory(@RequestBody @Validated AddCategoryReqVO addCategoryReqVO) {
+        return categoryService.addCategory(addCategoryReqVO);
+    }
+
+    @PostMapping("/list")
+    @ApiOperationLog(description = "获取分类列表分页数据")
+    public PageResponse queryCategoryPageList(@RequestBody QueryCategoryPageListReqVO queryCategoryPageListReqVO) {
+        return categoryService.queryCategoryPageList(queryCategoryPageListReqVO);
+    }
+
+    @PostMapping("/delete")
+    @ApiOperationLog(description = "删除分类")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Response deleteCategory(@RequestBody @Validated DeleteCategoryReqVO deleteCategoryReqVO) {
+        return categoryService.deleteCategory(deleteCategoryReqVO);
+    }
+
+    @PostMapping("/select/list")
+    @ApiOperationLog(description = "获取所有分类下拉框数据")
+    public Response queryCategorySelectList() {
+        return categoryService.queryCategorySelectList();
+    }
+}

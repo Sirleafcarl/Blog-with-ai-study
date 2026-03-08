@@ -1,4 +1,4 @@
-# WeBlog
+﻿# Cheese
 
 ## 简介
 
@@ -90,13 +90,13 @@
 ## 项目结构
 
 ```
-WeBlog/
-├── weblog-springboot/          # 后端（Maven 多模块）
-│   ├── weblog-module-admin/    # 后台管理模块
-│   ├── weblog-module-common/   # 通用模块（实体、Mapper、工具）
-│   ├── weblog-module-jwt/      # JWT 认证授权模块
-│   └── weblog-web/             # 启动入口 & 前台接口
-├── weblog-vue3/                # 前端（Vue 3 + Vite）
+Cheese/
+├── cheese-springboot/          # 后端（Maven 多模块）
+│   ├── cheese-module-admin/    # 后台管理模块
+│   ├── cheese-module-common/   # 通用模块（实体、Mapper、工具）
+│   ├── cheese-module-jwt/      # JWT 认证授权模块
+│   └── cheese-web/             # 启动入口 & 前台接口
+├── cheese-vue3/                # 前端（Vue 3 + Vite）
 │   └── src/
 │       ├── pages/
 │       │   ├── admin/          # 管理后台页面
@@ -118,15 +118,15 @@ WeBlog/
 
 **后端：**
 ```powershell
-cd weblog-springboot
+cd cheese-springboot
 mvn clean install -DskipTests
-cd weblog-web/target
-java -jar weblog-web-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
+cd cheese-web/target
+java -jar cheese-web-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev
 ```
 
 **前端：**
 ```powershell
-cd weblog-vue3
+cd cheese-vue3
 npm install
 npm run dev
 ```

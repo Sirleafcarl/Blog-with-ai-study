@@ -1,5 +1,5 @@
-/*
- WeBlog - Complete Current Schema
+﻿/*
+ Cheese - Complete Current Schema
  Includes all columns from Phase 1 (user profile), Phase 2 (article submission/review),
  and user management migrations.
  Safe to re-run: drops and recreates all tables.

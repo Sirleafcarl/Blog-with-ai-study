@@ -1,5 +1,5 @@
--- Phase 1: 用户资料字段扩展
--- 执行前请确保已连接 weblog 数据库
+﻿-- Phase 1: 用户资料字段扩展
+-- 执行前请确保已连接 cheese 数据库
 
 ALTER TABLE `t_user`
     ADD COLUMN `nickname` varchar(60)  DEFAULT NULL COMMENT '昵称' AFTER `username`,

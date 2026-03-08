@@ -1,0 +1,28 @@
+package com.sirleaf.cheese.admin.eventbus;
+
+import com.google.common.eventbus.Subscribe;
+import com.sirleaf.cheese.admin.async.PVIncreaseAsyncTask;
+import com.sirleaf.cheese.common.eventbus.EventListener;
+import com.sirleaf.cheese.common.eventbus.ArticleEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+
+@Component
+@Slf4j
+public class AdminEventListener implements EventListener {
+
+    @Autowired
+    private PVIncreaseAsyncTask pvIncreaseAsyncTask;
+
+    @Subscribe
+    @Override
+    public void handleEvent(ArticleEvent event) {
+        Long articleId = event.getArticleId();
+        String message = event.getMessage();
+        // 处理事件
+        log.info("==> Received event: {}", message);
+        pvIncreaseAsyncTask.handle(articleId);
+    }
+}

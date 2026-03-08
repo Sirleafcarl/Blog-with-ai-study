@@ -3,7 +3,7 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Annotation profile for weblog-springboot" enabled="true">
+      <profile name="Annotation profile for cheese-springboot" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -11,19 +11,26 @@
           <entry name="$PROJECT_DIR$/../../../../environmentalConfiguration/Java/Maven/.m2/repository/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar" />
           <entry name="$PROJECT_DIR$/../../../../environmentalConfiguration/Java/Maven/.m2/repository/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
         </processorPath>
-        <module name="weblog-module-admin" />
-        <module name="weblog-module-common" />
-        <module name="weblog-module-jwt" />
-        <module name="weblog-web" />
+        <module name="cheese-web" />
+        <module name="cheese-module-admin" />
+        <module name="cheese-module-common" />
+        <module name="cheese-module-jwt" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="weblog-module-admin" target="1.8" />
+      <module name="weblog-module-common" target="1.8" />
+      <module name="weblog-module-jwt" target="1.8" />
+      <module name="weblog-springboot" target="1.8" />
+      <module name="weblog-web" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="weblog-module-admin" options="-parameters" />
-      <module name="weblog-module-common" options="-parameters" />
-      <module name="weblog-module-jwt" options="-parameters" />
-      <module name="weblog-web" options="-parameters" />
+      <module name="cheese-module-admin" options="-parameters" />
+      <module name="cheese-module-common" options="-parameters" />
+      <module name="cheese-module-jwt" options="-parameters" />
+      <module name="cheese-web" options="-parameters" />
     </option>
   </component>
 </project>
