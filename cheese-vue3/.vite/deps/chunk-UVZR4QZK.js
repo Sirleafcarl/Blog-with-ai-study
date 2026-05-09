@@ -1,6 +1,6 @@
 import {
   html
-} from "./chunk-6MMQQEVW.js";
+} from "./chunk-WXKRM75G.js";
 import {
   EditorSelection,
   Language,
@@ -2169,4 +2169,4 @@ export {
   markdownKeymap,
   markdown
 };
-//# sourceMappingURL=chunk-DSV7APG6.js.map
+//# sourceMappingURL=chunk-UVZR4QZK.js.map

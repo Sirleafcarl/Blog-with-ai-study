@@ -188,6 +188,13 @@
                                 写文章
                             </a>
                         </li>
+                        <li v-if="isLogin">
+                            <a @click="$router.push('/profile?tab=notes')"
+                                class="inline-flex items-center gap-1 py-1.5 px-3 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 cursor-pointer ml-2">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                AI改题
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

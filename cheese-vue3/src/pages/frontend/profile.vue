@@ -522,6 +522,38 @@
         </el-table>
     </el-dialog>
 
+    <!-- 配置生成题目参数对话框 -->
+    <el-dialog
+        v-model="aiConfigDialogVisible"
+        title="生成题目设置"
+        width="400px"
+        top="15vh">
+        <el-form :model="aiConfig" label-width="90px">
+            <el-form-item label="题目类型">
+                <el-select v-model="aiConfig.questionType" style="width: 100%">
+                    <el-option label="混合题型 (推荐)" value="混合题型" />
+                    <el-option label="单项选择题" value="单项选择题" />
+                    <el-option label="判断题" value="判断题" />
+                    <el-option label="简答题" value="简答题" />
+                </el-select>
+            </el-form-item>
+            <el-form-item label="题目数量">
+                <el-input-number v-model="aiConfig.questionCount" :min="1" :max="20" style="width: 100%" />
+            </el-form-item>
+            <el-form-item label="难度级别">
+                <el-radio-group v-model="aiConfig.difficulty">
+                    <el-radio label="简单">简单</el-radio>
+                    <el-radio label="中等">中等</el-radio>
+                    <el-radio label="困难">困难</el-radio>
+                </el-radio-group>
+            </el-form-item>
+        </el-form>
+        <template #footer>
+            <el-button @click="aiConfigDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="confirmGenerateQuestions">开始生成</el-button>
+        </template>
+    </el-dialog>
+
     <!-- AI 结果对话框 -->
     <el-dialog v-model="noteAiDialogVisible" :title="noteAiDialogTitle" width="750px" top="5vh">
         <div v-loading="noteAiLoading" style="min-height: 100px;">
@@ -529,26 +561,37 @@
             <div v-if="noteQuizMode && noteQuizQuestions.length > 0" style="max-height: 65vh; overflow-y: auto; padding: 8px;">
                 <div v-for="(q, qi) in noteQuizQuestions" :key="qi" class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <div class="font-bold mb-3 text-base">{{ q.title }}</div>
-                    <div v-for="opt in q.options" :key="opt.key" class="mb-2">
-                        <label
-                            class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors"
-                            :class="{
-                                'bg-green-100 border border-green-400': noteQuizSubmitted && opt.key === q.answer,
-                                'bg-red-100 border border-red-400': noteQuizSubmitted && q.userAnswer === opt.key && opt.key !== q.answer,
-                            }">
-                            <input type="radio" :name="'nq'+qi" :value="opt.key" v-model="q.userAnswer" :disabled="noteQuizSubmitted" />
-                            <span>{{ opt.key }}. {{ opt.text }}</span>
-                        </label>
-                    </div>
+                    <template v-if="q.type === 'choice' || q.type === 'boolean'">
+                        <div v-for="opt in q.options" :key="opt.key" class="mb-2">
+                            <label
+                                class="flex items-center gap-2 cursor-pointer p-2 rounded hover:bg-blue-50 transition-colors"
+                                :class="{
+                                    'bg-green-100 border border-green-400': noteQuizSubmitted && opt.key === q.answer,
+                                    'bg-red-100 border border-red-400': noteQuizSubmitted && q.userAnswer === opt.key && opt.key !== q.answer,
+                                }">
+                                <input type="radio" :name="'nq'+qi" :value="opt.key" v-model="q.userAnswer" :disabled="noteQuizSubmitted" />
+                                <span>{{ q.type === 'choice' ? opt.key + '. ' + opt.text : opt.text }}</span>
+                            </label>
+                        </div>
+                    </template>
+                    <template v-if="q.type === 'short_answer'">
+                        <el-input type="textarea" :rows="3" v-model="q.userAnswer" :disabled="noteQuizSubmitted" placeholder="请输入你的思考" />
+                    </template>
                     <div v-if="noteQuizSubmitted" class="mt-2 text-sm">
-                        <span v-if="q.userAnswer === q.answer" class="text-green-600 font-bold">✅ 正确</span>
-                        <span v-else class="text-red-500 font-bold">❌ 错误，正确答案：{{ q.answer }}</span>
+                        <template v-if="q.type !== 'short_answer'">
+                            <span v-if="q.userAnswer === q.answer" class="text-green-600 font-bold">✅ 正确</span>
+                            <span v-else class="text-red-500 font-bold">❌ 错误，正确答案：{{ q.answer }}</span>
+                        </template>
+                        <template v-else>
+                            <div class="text-blue-600 font-bold mb-1">【参考答案】</div>
+                            <div class="whitespace-pre-wrap">{{ q.answer }}</div>
+                        </template>
                         <div v-if="q.explanation" class="mt-1 text-gray-500">💡 {{ q.explanation }}</div>
                     </div>
                 </div>
                 <div v-if="noteQuizSubmitted" class="text-center py-3">
-                    <div class="text-xl font-bold mb-2">得分：{{ noteQuizScore }} / {{ noteQuizQuestions.length * 20 }}</div>
-                    <div class="text-gray-500">答对 {{ noteQuizCorrect }} / {{ noteQuizQuestions.length }} 题</div>
+                    <div class="text-xl font-bold mb-2">得分：{{ noteQuizScore }} 分</div>
+                    <div class="text-gray-500" v-if="noteQuizQuestions.filter(x => x.type !== 'short_answer').length > 0">选择/判断答对 {{ noteQuizCorrect }} / {{ noteQuizQuestions.filter(x => x.type !== 'short_answer').length }} 题</div>
                 </div>
             </div>
             <!-- 普通文本模式 -->
@@ -942,6 +985,14 @@ const noteSaving         = ref(false)
 const noteForm           = reactive({ id: null, title: '', content: '', categoryId: null })
 
 // AI
+const aiConfigDialogVisible = ref(false)
+const aiConfig = reactive({
+    questionType: '混合题型',
+    questionCount: 5,
+    difficulty: '中等'
+})
+let currentRowForAi = null
+
 const noteAiDialogVisible = ref(false)
 const noteAiDialogTitle   = ref('')
 const noteAiResult        = ref('')
@@ -1089,16 +1140,36 @@ function parseNoteQuestions(text) {
         const options = []
         let answer = ''
         let explanation = ''
+        let type = 'short_answer'
+        
         for (const line of lines) {
             const optMatch = line.match(/^([A-D])[.．、]\s*(.+)/)
-            if (optMatch) options.push({ key: optMatch[1], text: optMatch[2].trim() })
-            const ansMatch = line.match(/【正确答案】\s*([A-D])/)
-            if (ansMatch) answer = ansMatch[1]
+            if (optMatch) {
+                options.push({ key: optMatch[1], text: optMatch[2].trim() })
+                type = 'choice'
+            }
+            
+            const ansMatch = line.match(/【正确答[案]?】\s*(.+)/) || line.match(/【参考答[案]?】\s*(.+)/)
+            if (ansMatch) {
+                answer = ansMatch[1].trim()
+                if (answer === '正确' || answer === '错误' || answer === '对' || answer === '错') {
+                    type = 'boolean'
+                    if (answer === '正确' || answer === '对') answer = '正确'
+                    if (answer === '错误' || answer === '错') answer = '错误'
+                }
+            }
+            
             const expMatch = line.match(/【解析】\s*(.+)/)
             if (expMatch) explanation = expMatch[1].trim()
         }
-        if (title && options.length >= 2 && answer) {
-            questions.push({ title, options, answer, explanation, userAnswer: '' })
+        
+        if (type === 'boolean' && options.length === 0) {
+            options.push({ key: '正确', text: '正确' })
+            options.push({ key: '错误', text: '错误' })
+        }
+        
+        if (title) {
+            questions.push({ type, title, options, answer, explanation, userAnswer: '' })
         }
     }
     return questions
@@ -1106,15 +1177,28 @@ function parseNoteQuestions(text) {
 
 const submitNoteQuiz = () => {
     let correct = 0
+    let totalScoreable = 0
     for (const q of noteQuizQuestions.value) {
-        if (q.userAnswer === q.answer) correct++
+        if (q.type !== 'short_answer') {
+            totalScoreable++
+            if (q.userAnswer === q.answer) correct++
+        }
     }
     noteQuizCorrect.value = correct
-    noteQuizScore.value = correct * 20
+    noteQuizScore.value = totalScoreable > 0 ? Math.round((correct / totalScoreable) * 100) : 100
     noteQuizSubmitted.value = true
 }
 
 const handleNoteGenerate = (row) => {
+    currentRowForAi = row
+    aiConfigDialogVisible.value = true
+}
+
+const confirmGenerateQuestions = () => {
+    aiConfigDialogVisible.value = false
+    const row = currentRowForAi
+    if (!row) return
+
     noteAiDialogTitle.value = `🧩 答题练习 —— 「${row.title}」`
     noteAiResult.value = ''
     noteQuizMode.value = true
@@ -1126,7 +1210,12 @@ const handleNoteGenerate = (row) => {
     noteAiDialogVisible.value = true
     row._generating = true
 
-    generateQuestions(row.id)
+    generateQuestions({
+        noteId: row.id,
+        questionType: aiConfig.questionType,
+        questionCount: aiConfig.questionCount,
+        difficulty: aiConfig.difficulty
+    })
         .then(res => {
             if (res.success) {
                 noteAiResult.value = res.data

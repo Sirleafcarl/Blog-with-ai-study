@@ -1,2 +1,2 @@
-import "./chunk-ZLWSK2WW.js";
+import "./chunk-AJXTVKVJ.js";
 //# sourceMappingURL=element-plus_es_components_icon_style_css.js.map

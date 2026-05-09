@@ -8,8 +8,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
-          <entry name="$PROJECT_DIR$/../../../../environmentalConfiguration/Java/Maven/.m2/repository/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar" />
-          <entry name="$PROJECT_DIR$/../../../../environmentalConfiguration/Java/Maven/.m2/repository/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
+          <entry name="$PROJECT_DIR$/../../../environmentalConfiguration/Java/Maven/.m2/repository/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar" />
+          <entry name="$PROJECT_DIR$/../../../environmentalConfiguration/Java/Maven/.m2/repository/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
         </processorPath>
         <module name="cheese-web" />
         <module name="cheese-module-admin" />

@@ -1,8 +1,8 @@
 import axios from '@/axios'
 
 // AI 根据笔记生成题目
-export function generateQuestions(noteId) {
-    return axios.post('/user/ai/generate-questions', { noteId })
+export function generateQuestions(data) {
+    return axios.post('/user/ai/generate-questions', data)
 }
 
 // AI 批改笔记

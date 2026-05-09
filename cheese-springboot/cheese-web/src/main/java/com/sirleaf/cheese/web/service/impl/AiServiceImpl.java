@@ -68,15 +68,20 @@ public class AiServiceImpl implements AiService {
             return Response.fail("笔记内容为空，无法生成题目");
         }
 
-        String prompt = "你是一位出题老师。请根据以下笔记内容，生成5道单选题。\n"
-                + "每道题格式如下：\n"
-                + "【第N题】题目内容\n"
-                + "A. 选项A\n"
-                + "B. 选项B\n"
-                + "C. 选项C\n"
-                + "D. 选项D\n"
-                + "【正确答案】X\n"
-                + "【解析】简要说明\n\n"
+        String qType = reqVO.getQuestionType() != null ? reqVO.getQuestionType() : "混合题型";
+        Integer qCount = reqVO.getQuestionCount() != null ? reqVO.getQuestionCount() : 5;
+        String diff = reqVO.getDifficulty() != null ? reqVO.getDifficulty() : "中等难度";
+
+        String prompt = "你是一位资深的教师。请根据以下笔记内容，为学生生成一份巩固复习题。\n"
+                + "要求如下：\n"
+                + "1. 题目类型为主要求：" + qType + "\n"
+                + "2. 题目数量：" + qCount + " 题\n"
+                + "3. 难度级别：" + diff + "\n"
+                + "格式参考要求（非常重要，请严格遵守！）：\n"
+                + "1. 每道题目必须以【第N题】开头（例如：【第1题】这是题目内容）。\n"
+                + "2. 如果是选择题，每一行提供一个选项，以 A/B/C/D 开头，如 A. 选项A。\n"
+                + "3. 并在每道题的最后附上：【正确答案】XX（单选题填A-D，判断题填正确/错误）\n"
+                + "4. 接着附上：【解析】详细的分析解释。\n\n"
                 + "笔记标题：" + noteDO.getTitle() + "\n\n"
                 + "笔记内容：\n" + content;
 
